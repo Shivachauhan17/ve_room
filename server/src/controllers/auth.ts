@@ -1,7 +1,8 @@
 import { Request,Response } from 'express'
-import User,{IUser} from '../models/user'
 import {saltHash,genPassword,validPassword} from '../lib/passwordUtil'
 import { Session } from 'express-session'
+import con from '../config/database'
+import { RowDataPacket, FieldPacket } from 'mysql2/promise';
 
 export interface SignupData{
     email:string,
@@ -22,6 +23,11 @@ export interface CustomRequest extends Request{
     session:Session & Partial<SessionData>
 }
 
+export interface IUser extends RowDataPacket{
+    email:string,
+    password:string,
+    salt:string
+}
 
 
 const controller={
@@ -31,19 +37,16 @@ const controller={
             if(!email || !password || !confirmPassword ){
                 return res.status(404).json({message:null,error:"data has not been sent correctly"})
             }
-            const user=await User.findOne({email:email})
-            if(user){
+            const [rows,fields]:[IUser[], FieldPacket[]]=await con.promise().query(`SELECT * FROM user WHERE email='${email}';`)
+            
+            if(rows.length>0){
                 return res.status(203).json({message:null,error:'user Already exists'})
             }
+
             const saltAndHash:saltHash=genPassword(password)
 
-            const newUser:IUser= new User({
-                email:email,
-                password:saltAndHash.hash,
-                salt:saltAndHash.salt
-            })
+            await con.promise().query(`INSERT INTO user (email,password,salt) VALUES ('${email}','${saltAndHash.hash}','${saltAndHash.salt}');`)
 
-            await newUser.save()
 
             req.session.email=email
             req.session.save(err=>{
@@ -66,11 +69,14 @@ const controller={
                 return res.status(404).json({message:null,error:"data has not been sent correctly"})
             }
             
-            const user=await User.findOne({email:email})
-            if(!user){
+            const [rows,fields]:[IUser[], FieldPacket[]]=await con.promise().query(`SELECT * FROM user WHERE email='${email}'`)
+
+            if(rows.length===0){
                 return res.status(203).json({message:null,error:'no user found with this email'})
             }
-            
+
+            const user:IUser=rows[0]
+
             const compare:boolean=validPassword(password,user.salt,user.password)
             if(compare){
                 req.session.email=email
@@ -83,7 +89,6 @@ const controller={
             else{
                 return res.status(203).json({message:null,error:'wrong credentials'})
             }
-
             
             return res.status(200).json({message:{email:email},error:null})
 

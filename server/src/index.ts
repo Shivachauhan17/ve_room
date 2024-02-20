@@ -9,7 +9,7 @@ import dotenv from 'dotenv'
 import authRoutes from './routes/auth'
 import { CustomRequest } from './controllers/auth';
 
-connectDB()
+
 const app:Application=express()
 
 dotenv.config({path:'./.env'})
@@ -52,3 +52,4 @@ app.use('/',authRoutes)
 app.listen(8000,()=>{
     console.log('server is running you better catch it')
 })
+

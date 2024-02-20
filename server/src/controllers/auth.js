@@ -12,8 +12,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const user_1 = __importDefault(require("../models/user"));
 const passwordUtil_1 = require("../lib/passwordUtil");
+const database_1 = __importDefault(require("../config/database"));
 const controller = {
     signup: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
@@ -21,17 +21,12 @@ const controller = {
             if (!email || !password || !confirmPassword) {
                 return res.status(404).json({ message: null, error: "data has not been sent correctly" });
             }
-            const user = yield user_1.default.findOne({ email: email });
-            if (user) {
+            const [rows, fields] = yield database_1.default.promise().query(`SELECT * FROM user WHERE email='${email}';`);
+            if (rows.length > 0) {
                 return res.status(203).json({ message: null, error: 'user Already exists' });
             }
             const saltAndHash = (0, passwordUtil_1.genPassword)(password);
-            const newUser = new user_1.default({
-                email: email,
-                password: saltAndHash.hash,
-                salt: saltAndHash.salt
-            });
-            yield newUser.save();
+            yield database_1.default.promise().query(`INSERT INTO user (email,password,salt) VALUES ('${email}','${saltAndHash.hash}','${saltAndHash.salt}');`);
             req.session.email = email;
             req.session.save(err => {
                 if (err) {
@@ -51,10 +46,11 @@ const controller = {
             if (!email || !password) {
                 return res.status(404).json({ message: null, error: "data has not been sent correctly" });
             }
-            const user = yield user_1.default.findOne({ email: email });
-            if (!user) {
+            const [rows, fields] = yield database_1.default.promise().query(`SELECT * FROM user WHERE email='${email}'`);
+            if (rows.length === 0) {
                 return res.status(203).json({ message: null, error: 'no user found with this email' });
             }
+            const user = rows[0];
             const compare = (0, passwordUtil_1.validPassword)(password, user.salt, user.password);
             if (compare) {
                 req.session.email = email;

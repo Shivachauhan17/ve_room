@@ -1,23 +1,29 @@
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
+// import mongoose from 'mongoose';
+// import dotenv from 'dotenv';
+import * as mysql from 'mysql2';
+let con: mysql.Connection | null = null;
 
 
-dotenv.config({path:'../.env'})
+const connectDB = () => {
+  if (!con) {
+      con = mysql.createConnection({
+          host: "localhost",
+          user: "root",
+          password: "Shiva@1974",
+          port: 3307,
+          database: 'watchparty'
+      });
 
-const connectDB=async():Promise<void>=>{
-    try{
-        if(process.env.DB_STRING!==undefined){
-            const conn=await mongoose.connect(process.env.DB_STRING);
-            console.log("mongo is connected");
-        }
-        else{
-            console.log("undefined mongo string");
-        }
-        
-    }
-    catch(error){
-        console.log(error)
-    }
-}
+      con.connect((err) => {
+          if (err) {
+              console.error('Error connecting to database:', err);
+              return;
+          }
+          console.log('Connected to database');
+      });
+  }
+  
+  return con;
+};
 
-export default connectDB;
+export default connectDB();
