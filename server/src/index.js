@@ -42,51 +42,53 @@ io.on('connection', (socket) => {
         }
         rooms[roomId].users.push(socket.id);
         console.log("user added to room " + roomId);
+        console.log("rooms", rooms);
+        console.log("users", users);
     });
-    // socket.on("localDescription",(params)=>{
-    //     let roomId=users[socket.id].roomId;
-    //     let otherUsers=rooms[roomId].users;
-    //     otherUsers.forEach(otherUser=>{
-    //         if(otherUser!==socket.id){
-    //             io.to(otherUser).emit("localDescription",{
-    //                 description:params.description
-    //             })
-    //         }
-    //     })
-    // })
-    // socket.on("remoteDescription",(params)=>{
-    //     let roomId=users[socket.id].roomId;
-    //     let otherUsers=rooms[roomId].users
-    //     otherUsers.forEach(otherUser=>{
-    //         if(otherUser!==socket.id){
-    //             io.to(otherUser).emit("remoteDescription",{
-    //                 description:params.description
-    //             })
-    //         }
-    //     })
-    // })
-    // socket.on("iceCandidate",(params)=>{
-    //     let roomId=users[socket.id].roomId
-    //     let otherUsers=rooms[roomId].users
-    //     otherUsers.forEach(otherUser=>{
-    //         if(otherUser!==socket.id){
-    //             io.to(otherUser).emit("iceCandidate",{
-    //                 candidate:params.candidate
-    //             })
-    //         }
-    //     })
-    // })
-    // socket.on("iceCandidateReply",(params)=>{
-    //     let roomId=users[socket.id].roomId
-    //     let otherUsers=rooms[roomId].users
-    //     otherUsers.forEach(otherUser=>{
-    //         if(otherUser!==socket.id){
-    //             io.to(otherUser).emit("iceCadidateReply",{
-    //                 candidate:params.candidate
-    //             })
-    //         }
-    //     })
-    // })
+    socket.on("localDescription", (params) => {
+        let roomId = users[socket.id].roomId;
+        let otherUsers = rooms[roomId].users;
+        otherUsers.forEach(otherUser => {
+            if (otherUser !== socket.id) {
+                io.to(otherUser).emit("localDescription", {
+                    description: params.description
+                });
+            }
+        });
+    });
+    socket.on("remoteDescription", (params) => {
+        let roomId = users[socket.id].roomId;
+        let otherUsers = rooms[roomId].users;
+        otherUsers.forEach(otherUser => {
+            if (otherUser !== socket.id) {
+                io.to(otherUser).emit("remoteDescription", {
+                    description: params.description
+                });
+            }
+        });
+    });
+    socket.on("iceCandidate", (params) => {
+        let roomId = users[socket.id].roomId;
+        let otherUsers = rooms[roomId].users;
+        otherUsers.forEach(otherUser => {
+            if (otherUser !== socket.id) {
+                io.to(otherUser).emit("iceCandidate", {
+                    candidate: params.candidate
+                });
+            }
+        });
+    });
+    socket.on("iceCandidateReply", (params) => {
+        let roomId = users[socket.id].roomId;
+        let otherUsers = rooms[roomId].users;
+        otherUsers.forEach(otherUser => {
+            if (otherUser !== socket.id) {
+                io.to(otherUser).emit("iceCadidateReply", {
+                    candidate: params.candidate
+                });
+            }
+        });
+    });
 });
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use(express_1.default.json());
@@ -115,3 +117,4 @@ app.use('/', auth_1.default);
 app.listen(3001, () => {
     console.log('server is running you better catch it');
 });
+server.listen(3002);
