@@ -5,7 +5,8 @@ export interface IMeetingState{
     remoteStream: MediaStream | null,
     isChannelReady :boolean,
     isInitiator :boolean,
-    isStarted:boolean
+    isStarted:boolean,
+    room:string
 }
 
 const initialState:IMeetingState={
@@ -13,12 +14,13 @@ const initialState:IMeetingState={
     remoteStream:null,
     isChannelReady:false,
     isInitiator:false,
-    isStarted:false
+    isStarted:false,
+    room:""
 }
 
 export interface IMeetingAction{
     type:string,
-    payload: MediaStream | boolean 
+    payload: MediaStream | boolean | string
 }
 
 
@@ -26,7 +28,7 @@ export interface IMeetingAction{
 
     switch(action.type){
         case types.setLocalStream:
-            if( typeof action.payload !== 'boolean'){
+            if( action.payload instanceof MediaStream){
                 return{
                     ...state,
                     localStream:action.payload
@@ -36,7 +38,7 @@ export interface IMeetingAction{
             
         
         case types.setRemoteStream:
-            if( typeof action.payload !== 'boolean'){
+            if( action.payload instanceof MediaStream){
                 return{
                     ...state,
                     remoteStream:action.payload
@@ -72,6 +74,14 @@ export interface IMeetingAction{
                     isStarted:action.payload
                 }
             } 
+            return state
+        case types.setRoom:
+            if(typeof action.payload==='string'){
+                return{
+                    ...state,
+                    room:action.payload
+                }
+            }
             return state
         
         default:

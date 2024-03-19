@@ -35,3 +35,10 @@ export const setIsStarted=(value:boolean)=>{
         payload:value
     }
 }
+
+export const setRoom=(value:string)=>{
+    return{
+        type:types.setRoom,
+        payload:value
+    }
+}

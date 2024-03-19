@@ -3,7 +3,8 @@
     setRemoteStream:'setRemoteStream',
     setIsChannelReady:'setIsChannelReady',
     setIsInitiatorReady:'setIsInitiatorReady',
-    setIsStarted:'setIsStarted'
+    setIsStarted:'setIsStarted',
+    setRoom:'setRoom'
 }
 
 

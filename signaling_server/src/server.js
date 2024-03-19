@@ -8,7 +8,11 @@ const http_1 = __importDefault(require("http"));
 const socket_io_1 = require("socket.io");
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
-const io = new socket_io_1.Server(server);
+const io = new socket_io_1.Server(server, {
+    cors: {
+        origin: 'http://localhost:5173'
+    }
+});
 io.on('connection', socket => {
     socket.on('message', function (message) {
         socket.broadcast.to(message.channel).emit('message', message.message);

@@ -6,7 +6,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/meet' element={<MeetPage/>}/>
+        <Route path='/meet/:roomId' element={<MeetPage/>}/>
       </Routes>
     </BrowserRouter>
   )

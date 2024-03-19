@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@types/react-router-dom": "^5.3.3",
+    "@types/webrtc": "^0.0.42",
     "react": "^18.2.0",
     "react-cookie": "^7.1.0",
     "react-dom": "^18.2.0",
