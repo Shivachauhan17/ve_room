@@ -6,7 +6,9 @@ export interface IMeetingState{
     isChannelReady :boolean,
     isInitiator :boolean,
     isStarted:boolean,
-    room:string
+    room:string,
+    isOffer:boolean,
+    isGotUserMedia:boolean
 }
 
 const initialState:IMeetingState={
@@ -15,12 +17,14 @@ const initialState:IMeetingState={
     isChannelReady:false,
     isInitiator:false,
     isStarted:false,
-    room:""
+    room:"",
+    isOffer:false,
+    isGotUserMedia:false
 }
 
 export interface IMeetingAction{
     type:string,
-    payload: MediaStream | boolean | string
+    payload: MediaStream | boolean | string | WebSocket
 }
 
 
@@ -83,7 +87,22 @@ export interface IMeetingAction{
                 }
             }
             return state
-        
+        case types.setGotUserMedia:
+            if(typeof action.payload==='boolean'){
+                return{
+                    ...state,
+                    isGotUserMedia:action.payload
+                }
+            }
+            return state
+        case types.setOffer:
+            if(typeof action.payload==='boolean'){
+                return{
+                    ...state,
+                    isOffer:action.payload
+                }
+            }
+            return state
         default:
             return state
             

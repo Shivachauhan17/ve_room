@@ -4,7 +4,9 @@
     setIsChannelReady:'setIsChannelReady',
     setIsInitiatorReady:'setIsInitiatorReady',
     setIsStarted:'setIsStarted',
-    setRoom:'setRoom'
+    setRoom:'setRoom',
+    setOffer:'setOffer',
+    setGotUserMedia:'setGotUserMedia'
 }
 
 

@@ -42,3 +42,17 @@ export const setRoom=(value:string)=>{
         payload:value
     }
 }
+
+export const setOffer=(value:boolean)=>{
+    return{
+        type:types.setOffer,
+        payload:value
+    }
+}
+
+export const setGotUserMedia=(value:boolean)=>{
+    return{
+        type:types.setGotUserMedia,
+        payload:value
+    }
+}
