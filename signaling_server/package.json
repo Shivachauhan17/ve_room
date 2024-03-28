@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start":"nodemon ./src/server.js"
   },
   "author": "",
   "license": "ISC",
@@ -13,6 +14,7 @@
     "express": "^4.18.3",
     "http": "^0.0.1-security",
     "http-types": "^0.6.1",
+    "nodemon": "^3.1.0",
     "socket.io": "^4.7.4",
     "typescript": "^5.4.2"
   }
