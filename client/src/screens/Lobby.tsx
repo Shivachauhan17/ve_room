@@ -1,7 +1,7 @@
-import React, { useState,useCallback,useEffect,FormEvent  } from 'react'
+import  { useState,useCallback,useEffect,FormEvent  } from 'react'
 import { useSocket } from '../context/SocketProvider'
 import { useNavigate } from "react-router-dom";
-import { useSelector,useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { IrootState } from '../store/reducer';
 
 export interface Idata{
@@ -11,7 +11,6 @@ export interface Idata{
 
 
 function Lobby() {
-    const dispatch=useDispatch()
     const isInitiator=useSelector((state:IrootState)=>state.one2one.isInitiator)
     console.log(isInitiator)
     const navigate=useNavigate()
@@ -30,6 +29,7 @@ function Lobby() {
         console.log(data)
         
         const { email, room } = data;
+        console.log(email)
         navigate(`/room/${room}`);
       },
       [navigate]

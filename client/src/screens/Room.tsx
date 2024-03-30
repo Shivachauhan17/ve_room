@@ -1,12 +1,10 @@
-import React,{ useEffect, useCallback, useState,useRef } from 'react'
-import ReactPlayer from "react-player";
+import { useEffect, useCallback, useState,useRef } from 'react'
 import { useParams } from 'react-router-dom';
 import peer from "../service/peer";
 import { useSelector,useDispatch } from 'react-redux';
 import { IrootState } from '../store/reducer';
 import { useSocket } from "../context/SocketProvider";
 import { setIsInitiator } from '../store/one_to_one/actions';
-import { start } from 'repl';
 
 
 export interface IuserJoined{
@@ -43,7 +41,7 @@ function Room() {
     const remoteVideo=useRef<HTMLVideoElement|null>(null)
     const [verify,setVerify]=useState(false)
     const [imageBase64,setImageBase64]=useState<string|null>(null)
-    const [audioClip,setAudioClip]=useState(null)
+    // const [audioClip,setAudioClip]=useState(null)
 
 
   const generateImageWithCanvas = (
@@ -151,7 +149,7 @@ useEffect(()=>{
       const handleCallAccepted = useCallback(
         ({ from, ans }:IcallAccepted) => {
           peer.setLocalDescription(ans);
-          console.log("Call Accepted!");
+          console.log("Call Accepted!",from);
           sendStreams()
         },
         [sendStreams]
@@ -243,6 +241,7 @@ useEffect(()=>{
     
     function stopRecording(mediaRecorder:MediaRecorder,audioChunks:Blob[]) {
         mediaRecorder.stop();
+        console.log(audioChunks)
         audioChunks = [];
     }
     
