@@ -40,4 +40,25 @@ io.on("connection",(socket)=>{
         io.to(to).emit("peer:nego:final",{from:socket.id,ans})
     })
 
+    socket.on("verify",(room)=>{
+        const initiatorEmail=socketidToEmailMap.get(socket.id)
+        let email=null
+        for (const [socketId, emailjoiner] of socketidToEmailMap.entries()) {
+            if(socketId!==socket.id){
+                email=emailjoiner
+            }
+        }
+        io.to(emailToSocketIdMap.get(initiatorEmail)).emit("verify",{email,initiatorEmail})
+    })
+
+    socket.on("verifyAudio",(room)=>{
+        const initiatorEmail=socketidToEmailMap.get(socket.id)
+        let email=null
+        for (const [socketId, emailjoiner] of socketidToEmailMap.entries()) {
+            if(socketId!==socket.id){
+                email=emailjoiner
+            }
+        }
+        io.to(emailToSocketIdMap.get(initiatorEmail)).emit("verifyAudio",{email,initiatorEmail})
+    })
 })

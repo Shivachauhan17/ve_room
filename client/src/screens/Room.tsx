@@ -1,15 +1,22 @@
 import React,{ useEffect, useCallback, useState,useRef } from 'react'
 import ReactPlayer from "react-player";
+import { useParams } from 'react-router-dom';
 import peer from "../service/peer";
 import { useSelector,useDispatch } from 'react-redux';
 import { IrootState } from '../store/reducer';
 import { useSocket } from "../context/SocketProvider";
 import { setIsInitiator } from '../store/one_to_one/actions';
+import { start } from 'repl';
 
 
 export interface IuserJoined{
     email:string,
     id:string
+}
+
+export interface Iverify{
+  email:string,
+  initiatorEmail:string,
 }
 
 export interface IincomingCall{
@@ -24,6 +31,7 @@ export interface IcallAccepted{
 
 
 function Room() {
+    const { roomId } = useParams();
     const dispatch=useDispatch()
     const socket = useSocket();
     const [remoteSocketId, setRemoteSocketId] = useState<string | null>(null);
@@ -33,44 +41,9 @@ function Room() {
     const [remoteStream, setRemoteStream] = useState<MediaStream|undefined>();
     const localVideo=useRef<HTMLVideoElement|null>(null)
     const remoteVideo=useRef<HTMLVideoElement|null>(null)
-
-    function base64ToBlob(base64String:string) {
-      // Split the base64 string by the comma
-      const parts = base64String.split(',');
-  
-      // Extract the data part and decode it from base64
-      const data = atob(parts[1]);
-  
-      // Create an array to store the binary data
-      const byteArray = new Uint8Array(data.length);
-  
-      // Populate the array with the binary data
-      for (let i = 0; i < data.length; i++) {
-          byteArray[i] = data.charCodeAt(i);
-      }
-  
-      // Create a blob from the array
-      return new Blob([byteArray], { type: 'image/png' });
-  }
-  
-  function downloadBlob(blob:Blob, fileName:string) {
-    // Create a URL for the Blob
-    const url = URL.createObjectURL(blob);
-
-    // Create a link element
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName; // Set the download attribute to specify filename
-    document.body.appendChild(link);
-
-    // Trigger the click event on the link to start download
-    link.click();
-
-    // Cleanup
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-}
-
+    const [verify,setVerify]=useState(false)
+    const [imageBase64,setImageBase64]=useState<string|null>(null)
+    const [audioClip,setAudioClip]=useState(null)
 
 
   const generateImageWithCanvas = (
@@ -85,54 +58,51 @@ function Room() {
     
     canvas.getContext("2d")?.drawImage(videoElem, 0, 0);
     const image = canvas.toDataURL("image/png");
-  
     return image;
   };
 
 
-  const downloadImage = (base64Image:string, fileName:string) => {
-    // Convert the base64 string to a Blob
-    const blob = base64ToBlob(base64Image);
-    console.log("blob",blob)
-  downloadBlob(blob, fileName);
-};
-
-  
 
 
-    const captureFrameAndSave = useCallback(async() => {
-        if (myStream) {
-            
-                if(localVideo.current){
-                  const videoElement=localVideo.current
-                  let mediaStream = videoElement.srcObject as MediaStream;
-                  let image=null
-                  const track = mediaStream.getVideoTracks()[0]
-                  try {
-                    image = await generateImageWithCanvas(track, videoElement);
-                    downloadImage(image, 'captured_image.png');
-                  } catch (error) {
-                      console.error('Error capturing frame:', error);
-                  }
-                 
-                  if(image) downloadImage(image, 'captured_image.png');
-            
+const captureFrameAndSave = useCallback(async() => {
+  if (myStream) {
+      
+          if(localVideo.current){
+            const videoElement=localVideo.current
+            let mediaStream = videoElement.srcObject as MediaStream;
+            let image=null
+            const track = mediaStream.getVideoTracks()[0]
+            try {
+              image = generateImageWithCanvas(track, videoElement);
+            } catch (error) {
+                console.error('Error capturing frame:', error);
             }
-        }
-    }, [myStream,generateImageWithCanvas]);
-
-    
-
-    
-
-    useEffect(()=>{
-      if(remoteStream && !isInitiator && sendStream){
-        console.log("capturing frames")
-        setTimeout(()=>{captureFrameAndSave()},1000)
-        // captureFrameAndSave()
+           if(image){
+            setImageBase64(image)
+            return image}
+           return null
+      
       }
+  }
+}, [myStream,generateImageWithCanvas]);
 
-    },[isInitiator,remoteStream,sendStream])
+
+useEffect(()=>{
+  if(imageBase64){
+    console.log(imageBase64)
+  }
+},[imageBase64])
+
+useEffect(()=>{
+  if(myStream && !isInitiator && sendStream && verify){
+    console.log("capturing frames")
+    setTimeout(()=>{
+      captureFrameAndSave()
+    },1000)
+    // captureFrameAndSave()
+  }
+},[verify,isInitiator,myStream,sendStream])
+
     
 
     const handleUserJoined=useCallback(({email,id}:IuserJoined)=>{
@@ -219,18 +189,88 @@ function Room() {
         })
       },[])
 
+      const handleVerifyEvent=useCallback(async({email,initiatorEmail}:Iverify)=>{
+        setVerify(true)
+        console.log("email",email)
+          console.log("initiatorEmail",initiatorEmail)
+        // if(base64ImageList && base64ImageList.length>0){
+          //endpoint hit
+          // console.log("email",email)
+          // console.log("initiatorEmail",initiatorEmail)
+        // }
+      },[])
+
+      function startRecording() {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+              let audioChunks:Blob[]=[]
+              let mediaRecorder = new MediaRecorder(stream);
+    
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+    
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+    
+                    // Create a URL for the Blob
+                    const audioUrl = URL.createObjectURL(audioBlob);
+    
+                    // Create a download link for the audio WAV file
+                    const link = document.createElement('a');
+                    link.href = audioUrl;
+                    link.download = 'recorded_audio.wav';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+    
+                    // Cleanup
+                    URL.revokeObjectURL(audioUrl);
+                };
+    
+                mediaRecorder.start();
+
+                setTimeout(()=>{
+                  stopRecording(mediaRecorder,audioChunks)
+                },10000)
+                
+            })
+            .catch(error => {
+                console.error('Error accessing user media:', error);
+            });
+    }
+
+    
+    function stopRecording(mediaRecorder:MediaRecorder,audioChunks:Blob[]) {
+        mediaRecorder.stop();
+        audioChunks = [];
+    }
+    
+
+      const handleVerifyAudioEvent=useCallback(async({email,initiatorEmail}:Iverify)=>{
+        console.log("email",email)
+          console.log("initiatorEmail",initiatorEmail)
+        startRecording()
+
+      },[])
+
     useEffect(()=>{
         socket.on('user:joined',handleUserJoined)
         socket.on('incomming:call',handleIncommingCall)
         socket.on("call:accepted", handleCallAccepted);
         socket.on("peer:nego:needed",handleNegoNeededIncoming)
         socket.on("peer:nego:final",handleNegoNeedFinal)
+        socket.on("verify",handleVerifyEvent)
+        socket.on("verifyAudio",handleVerifyAudioEvent)
         return()=>{
             socket.off('user:joined',handleUserJoined)
             socket.off('incomming:call',handleIncommingCall)
             socket.off("call:accepted", handleCallAccepted);
             socket.off("peer:nego:needed",handleNegoNeededIncoming)
             socket.off("peer:nego:final",handleNegoNeedFinal)
+            socket.off("verify",handleVerifyEvent)
+            socket.off("verifyAudio",handleVerifyAudioEvent)
+
         }
     },[
       socket,
@@ -251,12 +291,34 @@ function Room() {
       }
     },[remoteStream])
 
+    // let imageBase64List=[]
+    //   if(remoteStream && !isInitiator && sendStream){
+    //     console.log("capturing frames")
+    //     imageBase64List=captureFrameAndSave()
+    //     if(imageBase64List.length>0){
+    //       socket.emit("verify",imageBase64List){
+            
+    //       }
+    //     }
+    //     // captureFrameAndSave()
+    //   }
+    //   ,isInitiator,myStream,sendStream
+    const handleVerifyClick=useCallback(()=>{
+      socket.emit("verify",roomId)
+    },[socket])
+
+    const handleVerifyAudioClick=useCallback(()=>{
+      socket.emit("verifyAudio",roomId)
+    },[socket])
+
   return (
     <div>
         <h1>Room Page</h1>
         <h4>{remoteSocketId ? "Connected" : "No one in room"}</h4>
         {!isInitiator && myStream && <button onClick={sendStreams} >send Streams</button>}
         {isInitiator && remoteSocketId && <button onClick={handleCallUser}>CALL</button>}
+        {isInitiator && <button onClick={handleVerifyClick}>verifyVideo</button>}
+        {isInitiator && <button onClick={handleVerifyAudioClick}>verifyAudio</button>}
 
         {myStream && (
         <>
