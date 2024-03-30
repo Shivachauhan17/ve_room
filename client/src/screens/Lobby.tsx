@@ -1,6 +1,8 @@
 import React, { useState,useCallback,useEffect,FormEvent  } from 'react'
 import { useSocket } from '../context/SocketProvider'
 import { useNavigate } from "react-router-dom";
+import { useSelector,useDispatch } from 'react-redux';
+import { IrootState } from '../store/reducer';
 
 export interface Idata{
     email:string,
@@ -9,8 +11,12 @@ export interface Idata{
 
 
 function Lobby() {
+    const dispatch=useDispatch()
+    const isInitiator=useSelector((state:IrootState)=>state.one2one.isInitiator)
+    console.log(isInitiator)
     const navigate=useNavigate()
     const [email,setEmail]=useState("")
+
     const [room,setRoom]=useState("")
     const socket=useSocket()
     console.log(socket)
@@ -22,6 +28,7 @@ function Lobby() {
     const handleJoinRoom = useCallback(
       (data:Idata) => {
         console.log(data)
+        
         const { email, room } = data;
         navigate(`/room/${room}`);
       },

@@ -1,7 +1,11 @@
-import React,{ useEffect, useCallback, useState } from 'react'
+import React,{ useEffect, useCallback, useState,useRef } from 'react'
 import ReactPlayer from "react-player";
 import peer from "../service/peer";
+import { useSelector,useDispatch } from 'react-redux';
+import { IrootState } from '../store/reducer';
 import { useSocket } from "../context/SocketProvider";
+import { setIsInitiator } from '../store/one_to_one/actions';
+
 
 export interface IuserJoined{
     email:string,
@@ -20,14 +24,120 @@ export interface IcallAccepted{
 
 
 function Room() {
-  console.log(peer)
+    const dispatch=useDispatch()
     const socket = useSocket();
     const [remoteSocketId, setRemoteSocketId] = useState<string | null>(null);
+    const isInitiator=useSelector((state:IrootState)=>state.one2one.isInitiator)
+    const [sendStream,setSendStream]=useState(false)
     const [myStream, setMyStream] = useState<MediaStream|undefined>();
     const [remoteStream, setRemoteStream] = useState<MediaStream|undefined>();
+    const localVideo=useRef<HTMLVideoElement|null>(null)
+    const remoteVideo=useRef<HTMLVideoElement|null>(null)
+
+    function base64ToBlob(base64String:string) {
+      // Split the base64 string by the comma
+      const parts = base64String.split(',');
+  
+      // Extract the data part and decode it from base64
+      const data = atob(parts[1]);
+  
+      // Create an array to store the binary data
+      const byteArray = new Uint8Array(data.length);
+  
+      // Populate the array with the binary data
+      for (let i = 0; i < data.length; i++) {
+          byteArray[i] = data.charCodeAt(i);
+      }
+  
+      // Create a blob from the array
+      return new Blob([byteArray], { type: 'image/png' });
+  }
+  
+  function downloadBlob(blob:Blob, fileName:string) {
+    // Create a URL for the Blob
+    const url = URL.createObjectURL(blob);
+
+    // Create a link element
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName; // Set the download attribute to specify filename
+    document.body.appendChild(link);
+
+    // Trigger the click event on the link to start download
+    link.click();
+
+    // Cleanup
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+
+
+  const generateImageWithCanvas = (
+    track: MediaStreamTrack,
+    videoElem: HTMLVideoElement
+    ) => {
+    const canvas = document.createElement("canvas");
+  
+    const { width, height } = track.getSettings();
+    canvas.width = width || 100;
+    canvas.height = height || 100;
+    
+    canvas.getContext("2d")?.drawImage(videoElem, 0, 0);
+    const image = canvas.toDataURL("image/png");
+  
+    return image;
+  };
+
+
+  const downloadImage = (base64Image:string, fileName:string) => {
+    // Convert the base64 string to a Blob
+    const blob = base64ToBlob(base64Image);
+    console.log("blob",blob)
+  downloadBlob(blob, fileName);
+};
+
+  
+
+
+    const captureFrameAndSave = useCallback(async() => {
+        if (myStream) {
+            
+                if(localVideo.current){
+                  const videoElement=localVideo.current
+                  let mediaStream = videoElement.srcObject as MediaStream;
+                  let image=null
+                  const track = mediaStream.getVideoTracks()[0]
+                  try {
+                    image = await generateImageWithCanvas(track, videoElement);
+                    downloadImage(image, 'captured_image.png');
+                  } catch (error) {
+                      console.error('Error capturing frame:', error);
+                  }
+                 
+                  if(image) downloadImage(image, 'captured_image.png');
+            
+            }
+        }
+    }, [myStream,generateImageWithCanvas]);
+
+    
+
+    
+
+    useEffect(()=>{
+      if(remoteStream && !isInitiator && sendStream){
+        console.log("capturing frames")
+        setTimeout(()=>{captureFrameAndSave()},1000)
+        // captureFrameAndSave()
+      }
+
+    },[isInitiator,remoteStream,sendStream])
+    
 
     const handleUserJoined=useCallback(({email,id}:IuserJoined)=>{
         console.log(`Email ${email} joined room`)
+        dispatch(setIsInitiator(true))
         setRemoteSocketId(id);
     },[])
 
@@ -60,10 +170,12 @@ function Room() {
       );
 
       const sendStreams=()=>{
-        if(myStream)
-        for(const track of myStream.getTracks()){
-            peer.peer.addTrack(track,myStream)
-            }
+        if(myStream){
+          setSendStream(true)
+          for(const track of myStream.getTracks()){
+              peer.peer.addTrack(track,myStream)
+              }
+          }
       }
 
       const handleCallAccepted = useCallback(
@@ -127,36 +239,36 @@ function Room() {
     handleCallAccepted
     ])
 
+    useEffect(()=>{
+      if (myStream && localVideo.current) {
+        localVideo.current.srcObject = myStream;
+      }
+    },[myStream])
+
+    useEffect(()=>{
+      if (remoteStream && remoteVideo.current) {
+        remoteVideo.current.srcObject = remoteStream;
+      }
+    },[remoteStream])
+
   return (
     <div>
         <h1>Room Page</h1>
         <h4>{remoteSocketId ? "Connected" : "No one in room"}</h4>
-        {myStream && <button onClick={sendStreams} >send Streams</button>}
-        {remoteSocketId && <button onClick={handleCallUser}>CALL</button>}
+        {!isInitiator && myStream && <button onClick={sendStreams} >send Streams</button>}
+        {isInitiator && remoteSocketId && <button onClick={handleCallUser}>CALL</button>}
 
         {myStream && (
         <>
           <h1>My Stream</h1>
-          <ReactPlayer
-            playing
-            muted
-            height="100px"
-            width="200px"
-            url={myStream}
-          />
+          <video ref={localVideo}  autoPlay playsInline muted controls style={{ width: '200px', height: '100px' }}/>
         </>
       )}
 
       {remoteStream && (
         <>
           <h1>remote Stream</h1>
-          <ReactPlayer
-            playing
-            muted
-            height="100px"
-            width="200px"
-            url={remoteStream}
-          />
+          <video ref={remoteVideo}  autoPlay playsInline muted controls style={{ width: '200px', height: '100px' }}/>
         </>
       )}
  
