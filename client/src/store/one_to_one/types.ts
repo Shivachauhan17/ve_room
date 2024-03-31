@@ -1,5 +1,7 @@
 const types={
-    setIsInitiator:'setIsInitiator'
+    setIsInitiator:'setIsInitiator',
+    setImage:'setImage',
+    setAudio:'setAudio'
 }
 
 export default types

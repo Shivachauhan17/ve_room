@@ -22,7 +22,7 @@ export const useSocket = (): Socket => {
 
 export const SocketProvider: React.FC<SocketContextProps> = (props) => {
   // Create the socket instance
-  const socket = useMemo(() => io("https://watchpartywebapp.onrender.com:8000"), []);
+  const socket = useMemo(() => io("http://localhost:5000"), []);
 
   // Wrap the socket instance in a context provider
   const contextValue = useMemo(() => ({ socket }), [socket]);

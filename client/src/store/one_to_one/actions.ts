@@ -6,3 +6,17 @@ export const setIsInitiator=(value:boolean)=>{
         payload:value
     }
 }
+
+export const setImage=(value:string)=>{
+    return{
+        type:types.setImage,
+        payload:value
+    }
+}
+
+export const setAudio=(value:string)=>{
+    return{
+        type:types.setAudio,
+        payload:value
+    }
+}
