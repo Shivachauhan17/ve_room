@@ -20,21 +20,21 @@ export interface Iaction{
 const reducer=(state:Ione2one=initialValue,action:Iaction)=>{
     switch(action.type){
         case types.setIsInitiator:
-            if(typeof action.payload==='string')
+            if(typeof action.payload==='boolean')
                 return{
                     ...state,
                     isInitiator:action.payload
                 }
                 return state
         case types.setImage:
-            if(typeof action.payload==='boolean')
+            if(typeof action.payload==='string')
             return{
                 ...state,
                 imageBase64:action.payload
             }
             return state
         case types.setAudio:
-            if(typeof action.payload==='boolean')
+            if(typeof action.payload==='string')
             return{
                 ...state,
                 audioBase64:action.payload

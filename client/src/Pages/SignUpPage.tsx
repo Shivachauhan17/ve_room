@@ -35,7 +35,7 @@ const SignUpPage = () => {
         setSignUpButton(false);
         setShowPopup(true);
         event.preventDefault();
-        const response = await fetch("http://localhost:2000/SignUp", {
+        const response = await fetch("http://localhost:8000/SignUp", {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -61,32 +61,33 @@ const SignUpPage = () => {
             setShowPopup(false);
             setSignUpButton(true);
             alert("signup successfully");
-            // Navigate("/LoginPage")
+            Navigate("/LoginPage")
+
+            
         }
 
-        const audioResponse = await fetch("http://localhost:2000/UploadAudio", {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email: credentials.email, audio: audio
-            })
-        });
+        // const audioResponse = await fetch("http://localhost:8000/UploadAudio", {
+        //     method: "POST",
+        //     headers: {
+        //         'Content-Type': 'application/json'
+        //     },
+        //     body: JSON.stringify({
+        //         email: credentials.email, audio: audio
+        //     })
+        // });
 
-        const audioJson = await audioResponse.json();
-        if (!audioJson.success) {
-            setShowPopup(false);
-            setSignUpButton(true);
-            alert(audioJson.message);
-            return;
-        }
-        if (audioJson.success) {
-            // setShowPopup(false);
-            // setSignUpButton(true);
-            alert(audioJson.message);
-            return;
-        }
+        // const audioJson = await audioResponse.json();
+        // if (!audioJson.success) {
+        //     setShowPopup(false);
+        //     setSignUpButton(true);
+        //     alert(audioJson.message);
+        //     return;
+        // }
+        // if (audioJson.success) {
+           
+        //     alert(audioJson.message);
+        //     return;
+        // }
     }
 
     

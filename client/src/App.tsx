@@ -7,14 +7,21 @@ import LoginPage from './Pages/LoginPage'
 import SignUpPage from './Pages/SignUpPage' 
 import UserImages from './Pages/UserImages';
 import RecordAudio from './Pages/RecordAudio';
+import Lobby from "./screens/Lobby";
+import Room from "./screens/Room";
 
 function App() {
   return (
+
+    <div className="Home">
+
+  
     <BrowserRouter>
      <SocketProvider>
       <Routes>
         <Route  path='/' element={<Home/>} ></Route>
-        <Route  path='/JoinMeet' element={<JoinMeet/>} ></Route>
+        <Route  path='/JoinMeet' element={<Lobby/>} ></Route>
+        <Route  path='/room/:roomID' element={<Room/>} ></Route>
         <Route  path='/CreateMeet' element={<CreateMeet/>} ></Route>
         <Route  path='/LoginPage' element={<LoginPage/>} ></Route>
         <Route  path='/SignUpPage' element={<SignUpPage/>} ></Route>
@@ -23,6 +30,7 @@ function App() {
       </Routes>
       </SocketProvider>
     </BrowserRouter>
+    </div>
   )
 }
 

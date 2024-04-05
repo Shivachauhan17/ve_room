@@ -14,7 +14,8 @@ const HomeMid=()=>{
     {(localStorage.getItem("authToken")) ?
     <div className="midHomeButton">
 
-    <Link to={"/CreateMeet"}><button>Make-Room</button></Link>       
+    <Link  to={"/CreateMeet"}><button>Make-Room</button></Link>    
+
     <Link  to={"/JoinMeet"}><button className="midHomeButton2nd">Join-Room</button></Link>
     </div>
     :

@@ -5,7 +5,7 @@ import { useSelector,useDispatch } from 'react-redux';
 import { IrootState } from '../store/reducer';
 import { useSocket } from "../context/SocketProvider";
 import { setIsInitiator } from '../store/one_to_one/actions';
-
+import '../Css/Room.css'
 
 export interface IuserJoined{
     email:string,
@@ -192,9 +192,9 @@ useEffect(()=>{
         console.log("email",email)
           console.log("initiatorEmail",initiatorEmail)
         // if(base64ImageList && base64ImageList.length>0){
-          //endpoint hit
-          // console.log("email",email)
-          // console.log("initiatorEmail",initiatorEmail)
+        //   endpoint hit
+        //   console.log("email",email)
+        //   console.log("initiatorEmail",initiatorEmail)
         // }
       },[])
 
@@ -311,27 +311,46 @@ useEffect(()=>{
     },[socket])
 
   return (
-    <div>
+    <div className='room'>
         <h1>Room Page</h1>
         <h4>{remoteSocketId ? "Connected" : "No one in room"}</h4>
+        <div className="roomButton">
         {!isInitiator && myStream && <button onClick={sendStreams} >send Streams</button>}
         {isInitiator && remoteSocketId && <button onClick={handleCallUser}>CALL</button>}
         {isInitiator && <button onClick={handleVerifyClick}>verifyVideo</button>}
         {isInitiator && <button onClick={handleVerifyAudioClick}>verifyAudio</button>}
 
-        {myStream && (
+        </div>
+
+
+        <div className="roomstream">
+
+
+          <div className='mystreamfirst'>
+          {myStream && (
         <>
-          <h1>My Stream</h1>
-          <video ref={localVideo}  autoPlay playsInline muted controls style={{ width: '200px', height: '100px' }}/>
+          <h2>My Stream</h2>
+          <video ref={localVideo}  className='ajay' autoPlay playsInline muted controls />
+        </>
+      )}
+          </div>
+
+        
+<div className='mystreamfirst'>
+{remoteStream && (
+        <>
+          <h2>remote Stream</h2>
+          <video ref={remoteVideo}  autoPlay playsInline muted controls />
         </>
       )}
 
-      {remoteStream && (
-        <>
-          <h1>remote Stream</h1>
-          <video ref={remoteVideo}  autoPlay playsInline muted controls style={{ width: '200px', height: '100px' }}/>
-        </>
-      )}
+</div>
+      
+
+        </div>
+      
+
+        
  
           
     </div>

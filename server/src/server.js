@@ -6,14 +6,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const http_1 = __importDefault(require("http"));
 const socket_io_1 = require("socket.io");
-var options = {
-    allowUpgrades: true,
-    transports: ['websocket', 'file', 'htmlfile', 'xhr-polling', 'jsonp-polling', 'polling'],
-    pingTimeout: 9000,
-    pingInterval: 3000,
-    httpCompression: true,
-    origins: '*:*'
-};
+// var options = {
+//     allowUpgrades: true,
+//     transports: ['websocket', 'file', 'htmlfile', 'xhr-polling', 'jsonp-polling', 'polling'],
+//     pingTimeout: 9000,
+//     pingInterval: 3000,
+//     httpCompression: true,
+//     origins: '*:*' 
+//   };
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server, {
@@ -70,4 +70,4 @@ io.on("connection", (socket) => {
         io.to(emailToSocketIdMap.get(initiatorEmail)).emit("verifyAudio", { email, initiatorEmail });
     });
 });
-server.listen(5000, () => console.log('server is running on port 5000'));
+exports.default = app;

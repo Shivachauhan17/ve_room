@@ -2,14 +2,14 @@ import express from 'express';
 import http from 'http';
 import {Server} from 'socket.io'
 
-var options = {
-    allowUpgrades: true,
-    transports: ['websocket', 'file', 'htmlfile', 'xhr-polling', 'jsonp-polling', 'polling'],
-    pingTimeout: 9000,
-    pingInterval: 3000,
-    httpCompression: true,
-    origins: '*:*' 
-  };
+// var options = {
+//     allowUpgrades: true,
+//     transports: ['websocket', 'file', 'htmlfile', 'xhr-polling', 'jsonp-polling', 'polling'],
+//     pingTimeout: 9000,
+//     pingInterval: 3000,
+//     httpCompression: true,
+//     origins: '*:*' 
+//   };
   
 
 const app=express()
@@ -80,4 +80,4 @@ io.on("connection",(socket)=>{
     })
 })
 
-server.listen(5000, () => console.log('server is running on port 5000'));
+export default app

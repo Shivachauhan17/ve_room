@@ -13,6 +13,7 @@ const UserImages = () => {
     const canvasRef = useRef<HTMLCanvasElement|null>(null);
     const navigate = useNavigate();
     const image=useSelector((state:IrootState)=>state.one2one.imageBase64)
+    console.log(image)
 
     useEffect(() => {
         if (!videoRef.current || !canvasRef.current) return;
@@ -40,7 +41,6 @@ const UserImages = () => {
         context?.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
 
         const imageDataURL = canvasRef.current.toDataURL('image/png');
-        console.log("heyy",imageDataURL)
         dispatch(setImage(imageDataURL));
         setShowSubmitButton(true); 
     };

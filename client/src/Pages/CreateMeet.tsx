@@ -2,8 +2,11 @@ import  { useState, useEffect } from "react";
 import Navbar from "../component/Navbar";
 import  '../Css/Home.css'
 import '../Css/CreateMeet.css'  
+import { useNavigate } from "react-router-dom";
+
 
 const CreateMeet = () => {
+    const navigate=useNavigate()
     const [roomId, setRoomId] = useState("");
     const [credentials,setcredentials]=useState({RoomTitle:"" ,RoomId:""});
 
@@ -22,6 +25,8 @@ const CreateMeet = () => {
             console.log(json.RoomId);
             setRoomId(json.RoomId);
             localStorage.setItem("roomId", json.RoomId); 
+            navigate('/JoinMeet')
+
         } catch (error) {
             console.error("Error creating meet:", error);
         }

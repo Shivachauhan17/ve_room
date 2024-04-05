@@ -30,7 +30,7 @@
     flex-wrap: wrap;
 }
 .image-preview-item {
-    /* border: 1px green solid; */
+    border: 1px green solid;
     width: 305px;
     height: 200px;
     margin-left: 30%;

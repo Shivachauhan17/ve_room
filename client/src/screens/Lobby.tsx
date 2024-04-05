@@ -14,7 +14,16 @@ function Lobby() {
     const isInitiator=useSelector((state:IrootState)=>state.one2one.isInitiator)
     console.log(isInitiator)
     const navigate=useNavigate()
-    const [email,setEmail]=useState("")
+    let userEmail=""
+    const [uemail,setEmail]=useState("")
+    let email=localStorage.getItem("userEmail")
+     if(email && typeof email==='string'){
+      userEmail=email
+     }
+
+    console.log(userEmail)
+    
+    console.log(userEmail,"userEmial")
 
     const [room,setRoom]=useState("")
     const socket=useSocket()
@@ -51,7 +60,7 @@ function Lobby() {
         <input
           type="email"
           id="email"
-          value={email}
+          value={userEmail}
           onChange={(e) => setEmail(e.target.value)}
         />
         <br />
