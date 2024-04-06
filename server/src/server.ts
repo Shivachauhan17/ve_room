@@ -1,6 +1,12 @@
 import express from 'express';
 import http from 'http';
 import {Server} from 'socket.io'
+import connectDB from './utils/db';
+import logger from 'morgan';
+import cors from 'cors';
+
+
+connectDB()
 
 // var options = {
 //     allowUpgrades: true,
@@ -13,6 +19,12 @@ import {Server} from 'socket.io'
   
 
 const app=express()
+
+app.use(logger('dev'))
+app.use(cors({
+    origin:"*"
+}))
+
 const server=http.createServer(app)
 const io=new Server(server,{
     cors:{
@@ -79,5 +91,10 @@ io.on("connection",(socket)=>{
         io.to(emailToSocketIdMap.get(initiatorEmail)).emit("verifyAudio",{email,initiatorEmail})
     })
 })
+
+app.get('/test',(req,res,next)=>{
+    res.status(200).json({msg:"hello test was successfull"})
+})
+
 
 export default app

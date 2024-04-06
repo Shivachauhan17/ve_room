@@ -7,4 +7,6 @@ exports.MONGODB_URI = exports.PORT = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 exports.PORT = process.env.PORT;
-exports.MONGODB_URI = process.env.MONGODB_URI;
+exports.MONGODB_URI = process.env.NODE_ENV === 'test'
+    ? process.env.TEST_MONGO_URI
+    : process.env.MONGODB_URI;

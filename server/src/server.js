@@ -6,6 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const http_1 = __importDefault(require("http"));
 const socket_io_1 = require("socket.io");
+const db_1 = __importDefault(require("./utils/db"));
+const morgan_1 = __importDefault(require("morgan"));
+const cors_1 = __importDefault(require("cors"));
+(0, db_1.default)();
 // var options = {
 //     allowUpgrades: true,
 //     transports: ['websocket', 'file', 'htmlfile', 'xhr-polling', 'jsonp-polling', 'polling'],
@@ -15,6 +19,10 @@ const socket_io_1 = require("socket.io");
 //     origins: '*:*' 
 //   };
 const app = (0, express_1.default)();
+app.use((0, morgan_1.default)('dev'));
+app.use((0, cors_1.default)({
+    origin: "*"
+}));
 const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server, {
     cors: {
@@ -69,5 +77,8 @@ io.on("connection", (socket) => {
         }
         io.to(emailToSocketIdMap.get(initiatorEmail)).emit("verifyAudio", { email, initiatorEmail });
     });
+});
+app.get('/test', (req, res, next) => {
+    res.status(200).json({ msg: "hello test was successfull" });
 });
 exports.default = app;

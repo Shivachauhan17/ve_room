@@ -12,17 +12,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const node_test_1 = require("node:test");
 const mongoose_1 = __importDefault(require("mongoose"));
-const config_1 = require("./config");
-const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        if (config_1.MONGODB_URI !== undefined) {
-            yield mongoose_1.default.connect(config_1.MONGODB_URI);
-            console.log("mongo is connected");
-        }
-    }
-    catch (error) {
-        console.log(error);
-    }
-});
-exports.default = connectDB;
+const supertest_1 = __importDefault(require("supertest"));
+const server_1 = __importDefault(require("../server"));
+const api = (0, supertest_1.default)(server_1.default);
+(0, node_test_1.test)('notes are returned as json', () => __awaiter(void 0, void 0, void 0, function* () {
+    yield api
+        .get('/test')
+        .expect(500)
+        .expect('Content-Type', /application\/json/);
+}));
+(0, node_test_1.after)(() => __awaiter(void 0, void 0, void 0, function* () {
+    yield mongoose_1.default.connection.close();
+}));
