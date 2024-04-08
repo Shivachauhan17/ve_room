@@ -8,6 +8,9 @@ const connectDB=async():Promise<void>=>{
             await mongoose.connect(MONGODB_URI);
             console.log("mongo is connected");
         }
+        else{
+            console.log("mongo not connected");
+        }
     }
     catch(error){
         console.log(error)

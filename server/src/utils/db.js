@@ -20,6 +20,9 @@ const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
             yield mongoose_1.default.connect(config_1.MONGODB_URI);
             console.log("mongo is connected");
         }
+        else {
+            console.log("mongo not connected");
+        }
     }
     catch (error) {
         console.log(error);

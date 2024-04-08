@@ -4,6 +4,10 @@ import {Server} from 'socket.io'
 import connectDB from './utils/db';
 import logger from 'morgan';
 import cors from 'cors';
+import dotenv from 'dotenv'
+import authRoutes from './routes/auth'
+
+dotenv.config({path:"./utils/.env"})
 
 
 connectDB()
@@ -92,9 +96,7 @@ io.on("connection",(socket)=>{
     })
 })
 
-app.get('/test',(req,res,next)=>{
-    res.status(200).json({msg:"hello test was successfull"})
-})
+app.use('/',authRoutes)
 
 
 export default app

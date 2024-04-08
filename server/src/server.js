@@ -9,6 +9,9 @@ const socket_io_1 = require("socket.io");
 const db_1 = __importDefault(require("./utils/db"));
 const morgan_1 = __importDefault(require("morgan"));
 const cors_1 = __importDefault(require("cors"));
+const dotenv_1 = __importDefault(require("dotenv"));
+const auth_1 = __importDefault(require("./routes/auth"));
+dotenv_1.default.config({ path: "./utils/.env" });
 (0, db_1.default)();
 // var options = {
 //     allowUpgrades: true,
@@ -78,7 +81,5 @@ io.on("connection", (socket) => {
         io.to(emailToSocketIdMap.get(initiatorEmail)).emit("verifyAudio", { email, initiatorEmail });
     });
 });
-app.get('/test', (req, res, next) => {
-    res.status(200).json({ msg: "hello test was successfull" });
-});
+app.use('/', auth_1.default);
 exports.default = app;
