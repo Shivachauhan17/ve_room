@@ -42,35 +42,41 @@ const controller={
         }
         catch(err){
             console.log(err)
-            // next(err)
+            return res.status(500).json({})
         }
     },
     login:async(req:Request,res:Response,next:NextFunction)=>{
-        const {username,password}=req.body
-        if(!username || !password)
-            return res.status(400).json({msg:null,err:"some of the field missing from the requests"})
+        try{
+            const {username,password}=req.body
+            if(!username || !password)
+                return res.status(400).json({msg:null,err:"some of the field missing from the requests"})
 
-        const user=await User.findOne({username:username})
-        const passwordCorrect=user===null?false:await bcrypt.compare(password,user.passwordHash)
-        if(!(user && passwordCorrect)){
-            return res.status(401).json({
-                error: 'invalid username or password'
-              })
+            const user=await User.findOne({username:username})
+            const passwordCorrect=user===null?false:await bcrypt.compare(password,user.passwordHash)
+            if(!(user && passwordCorrect)){
+                return res.status(401).json({
+                    error: 'invalid username or password'
+                })
+            }
+
+            const userForToken = {
+                username: user.username,
+                id: user._id,
+            }
+            
+            let token=null
+            if(JWT_SECRET!==undefined )
+                token = jwt.sign(userForToken, JWT_SECRET)
+            
+            res
+            .status(200)
+            .send({ token, username: user.username, name: user.name })
         }
+        catch(err){
+            console.log(err)
+            return res.status(500).json({})
 
-        const userForToken = {
-            username: user.username,
-            id: user._id,
-          }
-        
-        let token=null
-        if(JWT_SECRET!==undefined )
-            token = jwt.sign(userForToken, JWT_SECRET)
-        
-        res
-        .status(200)
-        .send({ token, username: user.username, name: user.name })
-
+        }
     }
 
 }

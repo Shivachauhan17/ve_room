@@ -6,6 +6,8 @@ import logger from 'morgan';
 import cors from 'cors';
 import dotenv from 'dotenv'
 import authRoutes from './routes/auth'
+import { json, urlencoded } from 'express';
+
 
 dotenv.config({path:"./utils/.env"})
 
@@ -23,7 +25,8 @@ connectDB()
   
 
 const app=express()
-
+app.use(json()); // Parse JSON bodies
+app.use(urlencoded({ extended: true }));
 app.use(logger('dev'))
 app.use(cors({
     origin:"*"

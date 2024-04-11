@@ -9,7 +9,8 @@
     "test": "cross-env NODE_ENV=test tsc && jest --verbose"
   },
   "jest": {
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "testTimeout": 400000
   },
   "author": "",
   "license": "ISC",

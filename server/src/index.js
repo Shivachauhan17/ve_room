@@ -4,8 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const server_1 = __importDefault(require("./server"));
-// import {PORT} from './utils/config'
+const config_1 = require("./utils/config");
 const logger_1 = require("./utils/logger");
-server_1.default.listen(5000, () => {
-    (0, logger_1.info)(`Server is running on port ${5000}`);
+server_1.default.listen(config_1.PORT, () => {
+    (0, logger_1.info)(`Server is running on port ${config_1.PORT}`);
 });

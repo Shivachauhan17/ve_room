@@ -46,30 +46,36 @@ const controller = {
         }
         catch (err) {
             console.log(err);
-            // next(err)
+            return res.status(500).json({});
         }
     }),
     login: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const { username, password } = req.body;
-        if (!username || !password)
-            return res.status(400).json({ msg: null, err: "some of the field missing from the requests" });
-        const user = yield user_1.default.findOne({ username: username });
-        const passwordCorrect = user === null ? false : yield bcrypt_1.default.compare(password, user.passwordHash);
-        if (!(user && passwordCorrect)) {
-            return res.status(401).json({
-                error: 'invalid username or password'
-            });
+        try {
+            const { username, password } = req.body;
+            if (!username || !password)
+                return res.status(400).json({ msg: null, err: "some of the field missing from the requests" });
+            const user = yield user_1.default.findOne({ username: username });
+            const passwordCorrect = user === null ? false : yield bcrypt_1.default.compare(password, user.passwordHash);
+            if (!(user && passwordCorrect)) {
+                return res.status(401).json({
+                    error: 'invalid username or password'
+                });
+            }
+            const userForToken = {
+                username: user.username,
+                id: user._id,
+            };
+            let token = null;
+            if (config_1.JWT_SECRET !== undefined)
+                token = jsonwebtoken_1.default.sign(userForToken, config_1.JWT_SECRET);
+            res
+                .status(200)
+                .send({ token, username: user.username, name: user.name });
         }
-        const userForToken = {
-            username: user.username,
-            id: user._id,
-        };
-        let token = null;
-        if (config_1.JWT_SECRET !== undefined)
-            token = jsonwebtoken_1.default.sign(userForToken, config_1.JWT_SECRET);
-        res
-            .status(200)
-            .send({ token, username: user.username, name: user.name });
+        catch (err) {
+            console.log(err);
+            return res.status(500).json({});
+        }
     })
 };
 exports.default = controller;

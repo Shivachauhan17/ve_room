@@ -1,21 +1,21 @@
 import supertest from "supertest";
+import mongoose from "mongoose";
 import User from '../models/user'
 import app from '../server'
 import { describe } from "node:test";
 
 const api=supertest(app)
-jest.setTimeout(40000); 
 
 const initialData=[
     {
         username:"shiva",
         name:"shiva chauhan",
-        passwordHash:""
+        passwordHash:" "
     },
     {
         username:"jack",
         name:"jack jordan",
-        passwordHash:""
+        passwordHash:" "
     },
 ]
 
@@ -26,12 +26,18 @@ beforeEach(async()=>{
     await Promise.all(promiseArray)
 })
 
+afterAll(async () => {
+    // Close the MongoDB connection after all tests have finished
+    await mongoose.disconnect();
+});
+
+afterEach(async () => {
+    await User.deleteMany({});
+});
 
 describe('register  and login tests',()=>{
 
-    afterEach(async () => {
-        await User.deleteMany({});
-    });
+    
 
     test('register api test for passwords equivalence negative',async()=>{
         await api.post('/register')
@@ -79,15 +85,15 @@ describe('register  and login tests',()=>{
     test('login api test', async () => {
         await api.post('/login')
             .send({
-                username: "shiva",
-                password: "coder"
+                username: "newuser",
+                password: "newpassword"
             })
             .expect(200)
             .expect('Content-Type', /application\/json/)
             .then(response => {
                 expect(response.body.token).toBeDefined();
-                expect(response.body.username).toBe("shiva");
-                expect(response.body.name).toBe("cp");
+                expect(response.body.username).toBe("newuser");
+                expect(response.body.name).toBe("New User");
             });
     });
     

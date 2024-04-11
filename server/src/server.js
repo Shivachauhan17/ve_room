@@ -11,6 +11,7 @@ const morgan_1 = __importDefault(require("morgan"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const auth_1 = __importDefault(require("./routes/auth"));
+const express_2 = require("express");
 dotenv_1.default.config({ path: "./utils/.env" });
 (0, db_1.default)();
 // var options = {
@@ -22,6 +23,8 @@ dotenv_1.default.config({ path: "./utils/.env" });
 //     origins: '*:*' 
 //   };
 const app = (0, express_1.default)();
+app.use((0, express_2.json)()); // Parse JSON bodies
+app.use((0, express_2.urlencoded)({ extended: true }));
 app.use((0, morgan_1.default)('dev'));
 app.use((0, cors_1.default)({
     origin: "*"
