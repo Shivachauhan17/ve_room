@@ -16,6 +16,7 @@ function Lobby() {
     const navigate=useNavigate()
     let userEmail=""
     const [uemail,setEmail]=useState("")
+    console.log(uemail)
     let email=localStorage.getItem("userEmail")
      if(email && typeof email==='string'){
       userEmail=email

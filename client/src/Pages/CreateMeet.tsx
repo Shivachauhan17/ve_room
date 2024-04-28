@@ -9,6 +9,7 @@ const CreateMeet = () => {
     const navigate=useNavigate()
     const [roomId, setRoomId] = useState("");
     const [credentials,setcredentials]=useState({RoomTitle:"" ,RoomId:""});
+    setcredentials({RoomTitle:"" ,RoomId:""})
 
     const createmeet = async () => {
         

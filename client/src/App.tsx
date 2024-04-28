@@ -2,7 +2,7 @@ import {Route,Routes,BrowserRouter} from "react-router-dom";
 import { SocketProvider } from "./context/SocketProvider";
 import Home from './Pages/Home' 
 import CreateMeet from './Pages/CreateMeet'
-import JoinMeet from './Pages/JoinMeet' 
+// import JoinMeet from './Pages/JoinMeet' 
 import LoginPage from './Pages/LoginPage' 
 import SignUpPage from './Pages/SignUpPage' 
 import UserImages from './Pages/UserImages';

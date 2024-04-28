@@ -12,7 +12,7 @@ const Navbar = () => {
         // Navigate to "/"
         Navigate("/LoginPage");
     }
-    return (<>
+    return (<div className='navbar-container'>
     <div>
         <header>
 
@@ -58,6 +58,6 @@ const Navbar = () => {
 
         </header>
     </div>
-    </>)
+    </div>)
 }
 export default Navbar;
