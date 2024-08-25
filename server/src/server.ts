@@ -101,5 +101,8 @@ io.on("connection",(socket)=>{
 
 app.use('/',authRoutes)
 
+server.listen(5000,()=>{
+    console.log(`Signaling server is open at ${5000}`)
+})
 
 export default app

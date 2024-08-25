@@ -8,14 +8,13 @@ import { JWT_SECRET } from "../utils/config"
 const controller={
     register:async(req:Request,res:Response,next:NextFunction)=>{
         try{
-            const {username,name,password,confirmPassword}=req.body
-            if(!username || !name || !password || !confirmPassword) 
+            const {name,email,password,mobileNumber}=req.body
+            if(!name || !email || !password || !mobileNumber) 
                 return res.status(400).json({msg:null,err:"some of the field missing from the requests"})
 
-            if(password!==confirmPassword)
-                return res.status(400).json({msg:null,err:"password and confirmpassword field value is not the same"})
+          
 
-            const userExist=await User.findOne({username:username})
+            const userExist=await User.findOne({email:email})
             
             if(userExist)
                 return res.status(409).json({msg:null,err:"user Already exists"})
@@ -24,60 +23,63 @@ const controller={
             const passwordHash=await bcrypt.hash(password,50)
 
             const user=new User({
-                username,
                 name,
-                passwordHash
+                email,
+                passwordHash,
+                mobileNumber
             })
 
             const savedUser=await user.save()
             const userForToken = {
-                username: savedUser.username,
-                id: savedUser._id,
+                email: savedUser.email,
+                id: savedUser.id,
               }
             let token=null
             if(JWT_SECRET!==undefined)
                 token=jwt.sign(userForToken,JWT_SECRET)
-
-            res.status(200).send({token,username: user.username, name: user.name})
+            if(!token){
+                return res.status(400).json({msg:null,err:"Authorization Assignment failed."})
+            }
+            res.status(200).send({token})
         }
         catch(err){
             console.log(err)
             return res.status(500).json({})
         }
     },
-    login:async(req:Request,res:Response,next:NextFunction)=>{
-        try{
-            const {username,password}=req.body
-            if(!username || !password)
-                return res.status(400).json({msg:null,err:"some of the field missing from the requests"})
+    // login:async(req:Request,res:Response,next:NextFunction)=>{
+    //     try{
+    //         const {username,password}=req.body
+    //         if(!username || !password)
+    //             return res.status(400).json({msg:null,err:"some of the field missing from the requests"})
 
-            const user=await User.findOne({username:username})
-            const passwordCorrect=user===null?false:await bcrypt.compare(password,user.passwordHash)
-            if(!(user && passwordCorrect)){
-                return res.status(401).json({
-                    error: 'invalid username or password'
-                })
-            }
+    //         const user=await User.findOne({username:username})
+    //         const passwordCorrect=user===null?false:await bcrypt.compare(password,user.passwordHash)
+    //         if(!(user && passwordCorrect)){
+    //             return res.status(401).json({
+    //                 error: 'invalid username or password'
+    //             })
+    //         }
 
-            const userForToken = {
-                username: user.username,
-                id: user._id,
-            }
+    //         const userForToken = {
+    //             username: user.username,
+    //             id: user._id,
+    //         }
             
-            let token=null
-            if(JWT_SECRET!==undefined )
-                token = jwt.sign(userForToken, JWT_SECRET)
+    //         let token=null
+    //         if(JWT_SECRET!==undefined )
+    //             token = jwt.sign(userForToken, JWT_SECRET)
             
-            res
-            .status(200)
-            .send({ token, username: user.username, name: user.name })
-        }
-        catch(err){
-            console.log(err)
-            return res.status(500).json({})
+    //         res
+    //         .status(200)
+    //         .send({ token, username: user.username, name: user.email })
+    //     }
+    //     catch(err){
+    //         console.log(err)
+    //         return res.status(500).json({})
 
-        }
-    }
+    //     }
+    // }
 
 }
 

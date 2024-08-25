@@ -19,63 +19,65 @@ const config_1 = require("../utils/config");
 const controller = {
     register: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const { username, name, password, confirmPassword } = req.body;
-            if (!username || !name || !password || !confirmPassword)
+            const { name, email, password, mobileNumber } = req.body;
+            if (!name || !email || !password || !mobileNumber)
                 return res.status(400).json({ msg: null, err: "some of the field missing from the requests" });
-            if (password !== confirmPassword)
-                return res.status(400).json({ msg: null, err: "password and confirmpassword field value is not the same" });
-            const userExist = yield user_1.default.findOne({ username: username });
+            const userExist = yield user_1.default.findOne({ email: email });
             if (userExist)
                 return res.status(409).json({ msg: null, err: "user Already exists" });
             const saltRounds = 10;
             const passwordHash = yield bcrypt_1.default.hash(password, 50);
             const user = new user_1.default({
-                username,
                 name,
-                passwordHash
+                email,
+                passwordHash,
+                mobileNumber
             });
             const savedUser = yield user.save();
             const userForToken = {
-                username: savedUser.username,
-                id: savedUser._id,
+                email: savedUser.email,
+                id: savedUser.id,
             };
             let token = null;
             if (config_1.JWT_SECRET !== undefined)
                 token = jsonwebtoken_1.default.sign(userForToken, config_1.JWT_SECRET);
-            res.status(200).send({ token, username: user.username, name: user.name });
+            if (!token) {
+                return res.status(400).json({ msg: null, err: "Authorization Assignment failed." });
+            }
+            res.status(200).send({ token });
         }
         catch (err) {
             console.log(err);
             return res.status(500).json({});
         }
     }),
-    login: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        try {
-            const { username, password } = req.body;
-            if (!username || !password)
-                return res.status(400).json({ msg: null, err: "some of the field missing from the requests" });
-            const user = yield user_1.default.findOne({ username: username });
-            const passwordCorrect = user === null ? false : yield bcrypt_1.default.compare(password, user.passwordHash);
-            if (!(user && passwordCorrect)) {
-                return res.status(401).json({
-                    error: 'invalid username or password'
-                });
-            }
-            const userForToken = {
-                username: user.username,
-                id: user._id,
-            };
-            let token = null;
-            if (config_1.JWT_SECRET !== undefined)
-                token = jsonwebtoken_1.default.sign(userForToken, config_1.JWT_SECRET);
-            res
-                .status(200)
-                .send({ token, username: user.username, name: user.name });
-        }
-        catch (err) {
-            console.log(err);
-            return res.status(500).json({});
-        }
-    })
+    // login:async(req:Request,res:Response,next:NextFunction)=>{
+    //     try{
+    //         const {username,password}=req.body
+    //         if(!username || !password)
+    //             return res.status(400).json({msg:null,err:"some of the field missing from the requests"})
+    //         const user=await User.findOne({username:username})
+    //         const passwordCorrect=user===null?false:await bcrypt.compare(password,user.passwordHash)
+    //         if(!(user && passwordCorrect)){
+    //             return res.status(401).json({
+    //                 error: 'invalid username or password'
+    //             })
+    //         }
+    //         const userForToken = {
+    //             username: user.username,
+    //             id: user._id,
+    //         }
+    //         let token=null
+    //         if(JWT_SECRET!==undefined )
+    //             token = jwt.sign(userForToken, JWT_SECRET)
+    //         res
+    //         .status(200)
+    //         .send({ token, username: user.username, name: user.email })
+    //     }
+    //     catch(err){
+    //         console.log(err)
+    //         return res.status(500).json({})
+    //     }
+    // }
 };
 exports.default = controller;

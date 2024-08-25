@@ -85,4 +85,7 @@ io.on("connection", (socket) => {
     });
 });
 app.use('/', auth_1.default);
+server.listen(5000, () => {
+    console.log(`Signaling server is open at ${5000}`);
+});
 exports.default = app;

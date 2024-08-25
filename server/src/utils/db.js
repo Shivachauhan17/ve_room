@@ -16,8 +16,8 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const config_1 = require("./config");
 const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        if (config_1.MONGODB_URI !== undefined) {
-            yield mongoose_1.default.connect(config_1.MONGODB_URI);
+        if (config_1.DB_STRING !== undefined) {
+            yield mongoose_1.default.connect(config_1.DB_STRING);
             console.log("mongo is connected");
         }
         else {
