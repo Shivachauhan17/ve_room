@@ -1,52 +1,51 @@
 import React  from "react";
 import { useState } from "react";
-import '../Css/LoginPage.css'
-
-// import { Lock } from 'lucide-react';
 import { CiLock } from "react-icons/ci";
-// import { Mail } from 'lucide-react';
 import { CiMail } from "react-icons/ci";
-import { useNavigate } from "react-router-dom";
-
+import api from "../axios/instance";
+import Swal from 'sweetalert2'
 
 const LoginPage=()=>{
     const [credentials,setcredentials]=useState({email:"" ,password:""});
-    const [showPopup, setShowPopup] = useState(false);
-    const [signInButton,setsignInButton]=useState(true);
-    const Navigate=useNavigate();
+
     const handleSubmit=async(event:React.MouseEvent<HTMLButtonElement>)=>{
-        setsignInButton(false)
-        setShowPopup(true)
-    
-
         event.preventDefault();
-        const response=await fetch("http://localhost:8000/LogIn",{        
-            method:"POST",
-            headers:{
-                'Content-Type':'application/json'     
-            },
-            body:JSON.stringify({email:credentials.email,password:credentials.password})
-
+        api.post<{email:string, name:string}>('/login',credentials,{withCredentials:true})
+        .then((response)=>{
+            if (response.status === 200) {
+                localStorage.setItem('email', response.data.email);
+                localStorage.setItem('name', response.data.name);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Your operation has been completed successfully.',
+                });
+            }
         })
-        
-        const json=await response.json();
-        console.log(json);
-
-        if(!json.success){
-            setShowPopup(false)
-            setsignInButton(true)
-            alert("wrong information you are providing")
-        }
-        if(json.success){
-            setShowPopup(false)
-            setsignInButton(true)
-            localStorage.setItem("authToken",json.authToken)
-            localStorage.setItem("userEmail",credentials.email)
-            localStorage.setItem("userId",json.userId)
-            // console.log(userId)
-            alert("login successfully")
-            Navigate("/")
-        }
+        .catch((response)=>{
+            if (response.status === 411) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Warning!',
+                    text: 'Please send the correct inputs.',
+                    confirmButtonText: 'OK',
+                });
+            } else if (response.status === 401) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Warning!',
+                    text: 'No Such user exists.',
+                    confirmButtonText: 'OK',
+                });
+            } else if (response.status === 500) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Some error occurred on the server side.',
+                    confirmButtonText: 'OK',
+                });
+            }
+        })
     }
     const HandleNamechange=(event:React.ChangeEvent<HTMLInputElement>)=>{
         setcredentials({...credentials,[event.target.name]:event.target.value})
@@ -77,18 +76,13 @@ const LoginPage=()=>{
                         className="p-1 h-[40px] sm:h-[45px] rounded-md bg-gray-100 border-[1px] border-gray-300 outline-none"
                         type="password" name="password" value={credentials.password} onChange={HandleNamechange} placeholder="Password"/>     
                 </div> 
-                {showPopup &&
-                    <div className="">
-                    <h2>Please Wait !</h2>
-                    <div className=""></div>
-                </div>
-                }
-                {signInButton &&
+                
+                {credentials.email.length!==0 && credentials.password.length!==0? 
                     <div className="">
                     <button 
                     className="border-[1px] border-violet-800 text-violet-800 rounded-md p-2 sm:px-4 py-1 hover:text-white hover:bg-violet-800 font-semibold"
                     onClick={handleSubmit}>Submit</button>
-                    </div>
+                    </div>:null
                 }
                 
 
