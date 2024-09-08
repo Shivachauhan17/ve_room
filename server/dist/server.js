@@ -13,8 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const http_1 = __importDefault(require("http"));
-const socket_io_1 = require("socket.io");
 const db_1 = __importDefault(require("./utils/db"));
 const morgan_1 = __importDefault(require("morgan"));
 const cors_1 = __importDefault(require("cors"));
@@ -43,61 +41,6 @@ app.use((0, cors_1.default)({
     credentials: true
 }));
 app.use((0, cookie_parser_1.default)());
-const server = http_1.default.createServer(app);
-const io = new socket_io_1.Server(server, {
-    cors: {
-        origin: '*',
-    },
-    pingTimeout: 60000
-});
-const emailToSocketIdMap = new Map();
-const socketidToEmailMap = new Map();
-io.on("connection", (socket) => {
-    console.log(socket.id);
-    socket.on("room:join", (data) => {
-        console.log(data);
-        const { email, room } = data;
-        emailToSocketIdMap.set(email, socket.id);
-        socketidToEmailMap.set(socket.id, email);
-        io.to(room).emit("user:joined", { email, id: socket.id });
-        socket.join(room);
-        io.to(socket.id).emit("room:join", data);
-    });
-    socket.on("user:call", ({ to, offer }) => {
-        io.to(to).emit("incomming:call", { from: socket.id, offer });
-    });
-    socket.on("call:accepted", ({ to, ans }) => {
-        io.to(to).emit("call:accepted", { from: socket.id, ans });
-    });
-    socket.on("peer:nego:needed", ({ to, offer }) => {
-        console.log("peer nego needed", offer);
-        io.to(to).emit("peer:nego:needed", { from: socket.id, offer });
-    });
-    socket.on("peer:nego:done", ({ to, ans }) => {
-        console.log("peer nego done", ans);
-        io.to(to).emit("peer:nego:final", { from: socket.id, ans });
-    });
-    socket.on("verify", (room) => {
-        const initiatorEmail = socketidToEmailMap.get(socket.id);
-        let email = null;
-        for (const [socketId, emailjoiner] of socketidToEmailMap.entries()) {
-            if (socketId !== socket.id) {
-                email = emailjoiner;
-            }
-        }
-        io.to(emailToSocketIdMap.get(initiatorEmail)).emit("verify", { email, initiatorEmail });
-    });
-    socket.on("verifyAudio", (room) => {
-        const initiatorEmail = socketidToEmailMap.get(socket.id);
-        let email = null;
-        for (const [socketId, emailjoiner] of socketidToEmailMap.entries()) {
-            if (socketId !== socket.id) {
-                email = emailjoiner;
-            }
-        }
-        io.to(emailToSocketIdMap.get(initiatorEmail)).emit("verifyAudio", { email, initiatorEmail });
-    });
-});
 app.use('/', auth_1.default);
 app.use((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const token = req.cookies.access_token;
@@ -121,8 +64,5 @@ app.use((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
 }));
 app.get('/health', (req, res) => {
     res.send("healthy");
-});
-server.listen(5000, () => {
-    console.log(`Signaling server is open at ${5000}`);
 });
 exports.default = app;

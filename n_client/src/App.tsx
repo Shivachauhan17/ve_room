@@ -10,6 +10,8 @@ import RecordAudio from './Pages/RecordAudio';
 import Lobby from "./screens/Lobby";
 import Room from "./screens/Room";
 import Navbar from "./component/Navbar";
+import Sender from "./Pages/Sender";
+import Receiver from "./Pages/Receiver";
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
       <Navbar/>
       <Routes>
         <Route  path='/' element={<Home/>} ></Route>
+        <Route path="/sender" element={<Sender />} />
+        <Route path="/receiver" element={<Receiver />} />
         <Route  path='/JoinMeet' element={<Lobby/>} ></Route>
         <Route  path='/room/:roomID' element={<Room/>} ></Route>
         <Route  path='/CreateMeet' element={<CreateMeet/>} ></Route>
