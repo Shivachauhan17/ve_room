@@ -3,9 +3,9 @@ import { useEffect,useState } from "react"
 function Sender() {
     const [socket,setSocket]=useState<WebSocket|null>();
     const [pc, setPC] = useState<RTCPeerConnection | null>(null);
-    console.log(pc)
+    
     useEffect(()=>{
-        const socket=new WebSocket("ws://localhost:8080")
+        const socket=new WebSocket("ws://localhost:5000")
         setSocket(socket);
         socket.onopen=()=>{
             socket.send(JSON.stringify({type:'sender'}))
