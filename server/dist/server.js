@@ -33,15 +33,25 @@ dotenv_1.default.config({ path: "./utils/.env" });
 //     origins: '*:*' 
 //   };
 const app = (0, express_1.default)();
-app.use((0, express_2.json)()); // Parse JSON bodies
+app.use((0, express_2.json)({ limit: '50mb' })); // Parse JSON bodies
 app.use((0, express_2.urlencoded)({ extended: true }));
 app.use((0, morgan_1.default)('dev'));
 app.use((0, cors_1.default)({
-    origin: "http://localhost:5173",
+    origin: "http://localhost:3000",
     credentials: true
 }));
 app.use((0, cookie_parser_1.default)());
 app.use('/', auth_1.default);
+app.post('/logout', (req, res) => {
+    // Clear the cookie by setting it with an expired date
+    res.cookie('access_token', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        expires: new Date(0) // Set the cookie to expire in the past
+    })
+        .status(200)
+        .send({ message: 'Logged out successfully' });
+});
 app.use((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const token = req.cookies.access_token;
     if (!token) {

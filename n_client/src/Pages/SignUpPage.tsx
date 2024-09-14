@@ -5,8 +5,10 @@ import '../Css/LoginPage.css'
 import { CiMail, CiUser, CiLock } from "react-icons/ci";
 import { MdOutlineLocalPhone } from "react-icons/md";
 import Swal from 'sweetalert2';
+import { useNavigate } from "react-router-dom";
 
 const SignUpPage = () => {
+    const navigate=useNavigate()
     // const image=useSelector((state:IrootState)=>state.one2one.imageBase64)
     // const audio=useSelector((state:IrootState)=>state.one2one.audioBase64)
     const [page, setPage] = useState(1);
@@ -14,8 +16,12 @@ const SignUpPage = () => {
     const [isEmailRight, setISEmailRight] = useState(true);
     const [isMobileRight, setISMobileRight] = useState(true);
     const videoRef = useRef<HTMLVideoElement | null>(null);
-
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const [images, setImages] = useState<string[]>([]);
     // const Navigate = useNavigate();
+
+    
+    
 
     useEffect(() => {
         const getCameraStream = async () => {
@@ -44,12 +50,40 @@ const SignUpPage = () => {
         };
     }, [page]);
 
+    const captureImage=()=>{
+        const canvas=canvasRef.current;
+        const video=videoRef.current;
+
+        if(canvas && video){
+            const ctx=canvas.getContext("2d")
+            if(ctx){
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;  
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                // Convert the canvas to a base64-encoded image
+                const imageUrl = canvas.toDataURL('image/jpeg');
+                setImages([...images, imageUrl]);
+            }
+        }
+    }
+
     const handleSubmit = async (event: React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
         
-            api.post<{email:string, name:string}>('/register', credentials, { withCredentials: true })
+
+        
+            api.post<{email:string, name:string}>('/register', {...credentials,image:images[0]}, { withCredentials: true })
                 .then((response)=>{
                     if (response.status === 200) {
+                        for(let i=1;i<5;i++){
+                            try{
+                                api.post('/uploadImagesTo', {email:response.data.email,imgNo:(i+1).toString(),image:images[i]}, { withCredentials: true })
+                            }
+                            catch(e){
+                                continue
+                            }
+                        }
                         localStorage.setItem('email', response.data.email);
                         localStorage.setItem('name', response.data.name);
                         Swal.fire({
@@ -57,6 +91,9 @@ const SignUpPage = () => {
                             title: 'Success!',
                             text: 'Your operation has been completed successfully.',
                         });
+                        setTimeout(()=>{
+                            navigate('/')
+                        },1000)
                     }
                 })
                 .catch((response)=>{
@@ -186,25 +223,43 @@ const SignUpPage = () => {
         );
     } else if (page === 2) {
         return (
-            <div className="w-[100vw] flex flex-col justify-center items-center">
-                <div className="w-[80vw] flex flex-col justify-center items-start mt-20 sm:mt-40">
+            <div className="w-[100vw] flex flex-col justify-center items-center mt-4">
+                <div className="w-[80%] flex justify-start text-[15px] font-gray-500">
+                    <div>Click altleast 5 image of person for whom account being created</div>
+                </div>
+                <div className="w-[70vw] flex flex-col justify-between  items-start mt-4 sm:mt-40 gap-4">
                     <div className="overflow-hidden rounded-xl">
                         <video ref={videoRef} autoPlay />
                     </div>
-                    <div>
-                        <ul>
-                            <li>my Image</li>
+                    <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
+                    <div className="flex justify-start items-center flex-wrap  ">
+                        <ul className="flex justify-start items-start flex-wrap">
+                            {images.map((img, index) => (
+                                <li key={index} className="m-2 ">
+                                    <img className="w-[45px] h-[45px] rounded-md hover:w-[100px] hover:h-[100px]" src={img} alt={`Captured ${index}`} />
+                                </li>
+                            ))}
                         </ul>
-                        <div>
-                            <div className="h-[80px] w-[80px] text-6xl font-bold text-gray-400 border-[1px] border-gray-300 text-center rounded-md bg-gray-100">
-                                +
+                        <div className="flex flex-col justify-start items-start cursor-pointer ">
+                            <div onClick={()=>{
+                                if(images.length<5){
+                                    captureImage();
+                                }
+                                }} className="flex justify-center items-center gap-1">
+                                <div className="h-[45px] w-[45px] text-3xl font-bold text-gray-400 border-[1px] border-gray-300 text-center rounded-md bg-gray-100">
+                                    +
+                                </div>
+                                <div className="text-[12px] font-bold text-gray-400">
+                                Click
                             </div>
+                            </div>
+                            
                         </div>
                     </div>
                 </div>
-                <div className="mt-4">
-                    <button onClick={handleSubmit} className="text-purple-800">Submit</button>
-                </div>
+                {images.length===5?<div className="mt-4">
+                    <button onClick={handleSubmit} className="border-[1px] border-violet-800 text-violet-800 rounded-md p-2 py-1 hover:text-white hover:bg-violet-800">Submit</button>
+                </div>:null}
             </div>
         );
     }

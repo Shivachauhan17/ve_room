@@ -4,8 +4,10 @@ import { CiLock } from "react-icons/ci";
 import { CiMail } from "react-icons/ci";
 import api from "../axios/instance";
 import Swal from 'sweetalert2'
+import { useNavigate } from "react-router-dom";
 
 const LoginPage=()=>{
+    const  navigate=useNavigate()
     const [credentials,setcredentials]=useState({email:"" ,password:""});
 
     const handleSubmit=async(event:React.MouseEvent<HTMLButtonElement>)=>{
@@ -20,6 +22,9 @@ const LoginPage=()=>{
                     title: 'Success!',
                     text: 'Your operation has been completed successfully.',
                 });
+                setTimeout(()=>{
+                    navigate('/')
+                },1000)
             }
         })
         .catch((response)=>{

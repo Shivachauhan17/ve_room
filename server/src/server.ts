@@ -30,16 +30,26 @@ connectDB()
   
 
 const app=express()
-app.use(json()); // Parse JSON bodies
+app.use(json({limit: '50mb'})); // Parse JSON bodies
 app.use(urlencoded({ extended: true }));
 app.use(logger('dev'))
 app.use(cors({
-    origin:"http://localhost:5173",
+    origin:"http://localhost:3000",
     credentials:true    
 }))
 app.use(cookieParser())
 
 app.use('/',authRoutes)
+app.post('/logout', (req, res) => {
+  // Clear the cookie by setting it with an expired date
+  res.cookie('access_token', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    expires: new Date(0) // Set the cookie to expire in the past
+  })
+  .status(200)
+  .send({ message: 'Logged out successfully' });
+});
 
 app.use(async (req:IRequest, res, next) => {
     const token = req.cookies.access_token;
