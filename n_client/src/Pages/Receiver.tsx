@@ -39,6 +39,21 @@ function Receiver() {
             pc.addIceCandidate(message.candidate);
           }
       }
+      getCameraStreamAndSend(pc)
+  }
+
+  const getCameraStreamAndSend = (pc: RTCPeerConnection) => {
+    navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+      console.log("stream:",stream)
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.play();
+        // this is wrong, should propogate via a component
+        document.body.appendChild(video);
+        stream.getTracks().forEach((track) => {
+            pc?.addTrack(track);
+        });
+    });
   }
 
   return (

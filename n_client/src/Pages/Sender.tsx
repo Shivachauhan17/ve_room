@@ -29,6 +29,7 @@ function Sender() {
         }
 
         const pc=new RTCPeerConnection()
+        startVideoReceiving(pc)
         setPC(pc);
         pc.onicecandidate=(event)=>{
             if(event.candidate){
@@ -59,6 +60,16 @@ function Sender() {
                 pc?.addTrack(track);
             });
         });
+    }
+
+    const startVideoReceiving=(pc:RTCPeerConnection)=>{
+        const video2 = document.createElement('video');
+        document.body.appendChild(video2);
+        pc.ontrack = (event) => {
+            video2.srcObject = new MediaStream([event.track]);
+            video2.play();
+            console.log("onTrack event:",event)
+        }
     }
 
   return (

@@ -19,10 +19,10 @@ wss.on('connection', function connection(ws) {
   ws.on('message', function message(data: any) {
     const message = JSON.parse(data);
     if (message.type === 'sender') {
-      console.log("sender ws:",ws)
+      console.log("sender ws:")
       senderSocket = ws;
     } else if (message.type === 'receiver') {
-      console.log("receiver ws:",ws)
+      console.log("receiver ws:")
       receiverSocket = ws;
     } else if (message.type === 'createOffer') {
       console.log("create Offer")
