@@ -22,6 +22,7 @@ const express_2 = require("express");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = require("./utils/config");
+const room_1 = __importDefault(require("./routes/room"));
 dotenv_1.default.config({ path: "./utils/.env" });
 (0, db_1.default)();
 // var options = {
@@ -59,6 +60,7 @@ app.use((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     }
     try {
         const data = yield jsonwebtoken_1.default.verify(token, config_1.JWT_SECRET ? config_1.JWT_SECRET : "Secret");
+        console.log(data);
         if (data) {
             req.userId = data.id;
             req.email = data.email;
@@ -72,6 +74,7 @@ app.use((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         return res.sendStatus(500);
     }
 }));
+app.use("/rooms", room_1.default);
 app.get('/health', (req, res) => {
     res.send("healthy");
 });

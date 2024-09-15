@@ -9,6 +9,7 @@ import cookieParser from 'cookie-parser'
 import jwt from 'jsonwebtoken'
 import { JWT_SECRET } from "./utils/config"
 import { JwtPayload } from 'jsonwebtoken';
+import roomRoutes from './routes/room'
 
 dotenv.config({path:"./utils/.env"})
 
@@ -53,11 +54,13 @@ app.post('/logout', (req, res) => {
 
 app.use(async (req:IRequest, res, next) => {
     const token = req.cookies.access_token;
+    
     if (!token) {
       return res.sendStatus(403);
     }
     try {
       const data =await  jwt.verify(token, JWT_SECRET?JWT_SECRET:"Secret") as JwtPayload;
+      console.log(data)
       if(data){
         req.userId = data.id;
         req.email = data.email;
@@ -71,9 +74,12 @@ app.use(async (req:IRequest, res, next) => {
     }
   })
 
+app.use("/rooms",roomRoutes);
 app.get('/health',(req,res)=>{
     res.send("healthy")
 })
+
+
 
 
 export default app
