@@ -35,7 +35,7 @@ app.use(json({limit: '50mb'})); // Parse JSON bodies
 app.use(urlencoded({ extended: true }));
 app.use(logger('dev'))
 app.use(cors({
-    origin:"http://localhost:3000",
+    origin:["http://localhost:3000"],
     credentials:true    
 }))
 app.use(cookieParser())

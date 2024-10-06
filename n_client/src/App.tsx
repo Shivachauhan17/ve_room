@@ -18,7 +18,7 @@ function App() {
       <Navbar/>
       <Routes>
         <Route  path='/' element={<Home/>} ></Route>
-        <Route path="/sender/:code" element={<Sender />} />
+        <Route path="/sender" element={<Sender />} />
         <Route path="/receiver" element={<Receiver />} />
         {/* <Route  path='/JoinMeet' element={<Lobby/>} ></Route> */}
         {/* <Route  path='/room/:roomID' element={<Room/>} ></Route> */}

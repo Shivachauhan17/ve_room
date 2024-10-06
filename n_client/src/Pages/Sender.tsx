@@ -51,6 +51,7 @@ function Sender() {
 
     const getCameraStreamAndSend = (pc: RTCPeerConnection) => {
         navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+            console.log("stream:",stream)
             const video = document.createElement('video');
             video.srcObject = stream;
             video.play();
