@@ -1,0 +1,12 @@
+.Home ,.JoinMeet{
+    /* border: 2px red solid; */
+    width: 100vw; 
+    min-height: 100vh;  
+    /* background: linear-gradient(rgba(53, 52, 52, 0.5), rgba(41, 39, 39, 0.5)),
+    url(../images/ab.jpg); */
+    background:url("");
+    /* background:url('../images/ab.jpg') ; */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}

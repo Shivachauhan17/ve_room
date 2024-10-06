@@ -1,83 +1,51 @@
-import express from 'express';
+import { WebSocket, WebSocketServer } from 'ws';
 import http from 'http';
-import {Server} from 'socket.io'
-
-var options = {
-    allowUpgrades: true,
-    transports: ['websocket', 'file', 'htmlfile', 'xhr-polling', 'jsonp-polling', 'polling'],
-    pingTimeout: 9000,
-    pingInterval: 3000,
-    httpCompression: true,
-    origins: '*:*' 
-  };
-  
+import express from 'express'
 
 const app=express()
-const server=http.createServer(app)
-const io=new Server(server,{
-    cors:{
-        origin:'*',
-    },
-    pingTimeout: 60000
-})
+const PORT=5000
+const server = http.createServer(app);
 
 
 
-const emailToSocketIdMap = new Map();
-const socketidToEmailMap = new Map();
+const wss = new WebSocketServer({ server});
 
-io.on("connection",(socket)=>{
-    console.log(socket.id)
-    socket.on("room:join",(data)=>{
-        console.log(data)
-        const {email,room}=data
-        emailToSocketIdMap.set(email, socket.id);
-        socketidToEmailMap.set(socket.id, email);
-        io.to(room).emit("user:joined",{email,id:socket.id})
-        socket.join(room)
-        io.to(socket.id).emit("room:join", data);
-    })
+let senderSocket: null | WebSocket = null;
+let receiverSocket: null | WebSocket = null;
 
-    socket.on("user:call", ({ to, offer }) => {
-        
-        io.to(to).emit("incomming:call", { from: socket.id, offer });
-      });
+wss.on('connection', function connection(ws) {
+  ws.on('error', console.error);
 
-    socket.on("call:accepted", ({ to, ans }) => {
-        io.to(to).emit("call:accepted", { from: socket.id, ans });
-    });
-
-    socket.on("peer:nego:needed",({to,offer})=>{
-        console.log("peer nego needed",offer)
-        io.to(to).emit("peer:nego:needed",{from:socket.id,offer})
-    })
-
-    socket.on("peer:nego:done",({to,ans})=>{
-        console.log("peer nego done",ans)
-        io.to(to).emit("peer:nego:final",{from:socket.id,ans})
-    })
-
-    socket.on("verify",(room)=>{
-        const initiatorEmail=socketidToEmailMap.get(socket.id)
-        let email=null
-        for (const [socketId, emailjoiner] of socketidToEmailMap.entries()) {
-            if(socketId!==socket.id){
-                email=emailjoiner
-            }
+  ws.on('message', function message(data: any) {
+    const message = JSON.parse(data);
+    if (message.type === 'sender') {
+      console.log("sender ws:")
+      senderSocket = ws;
+    } else if (message.type === 'receiver') {
+      console.log("receiver ws:")
+      receiverSocket = ws;
+    } else if (message.type === 'createOffer') {
+      console.log("create Offer")
+      if (ws !== senderSocket) {
+        return;
+      }
+      receiverSocket?.send(JSON.stringify({ type: 'createOffer', sdp: message.sdp }));
+    } else if (message.type === 'createAnswer') {
+      console.log("create Answer")
+        if (ws !== receiverSocket) {
+          return;
         }
-        io.to(emailToSocketIdMap.get(initiatorEmail)).emit("verify",{email,initiatorEmail})
-    })
+        senderSocket?.send(JSON.stringify({ type: 'createAnswer', sdp: message.sdp }));
+    } else if (message.type === 'iceCandidate') {
+      if (ws === senderSocket) {
+        console.log("ice candidate from sender")
+        receiverSocket?.send(JSON.stringify({ type: 'iceCandidate', candidate: message.candidate }));
+      } else if (ws === receiverSocket) {
+        console.log("ice candidate from receiver")
+        senderSocket?.send(JSON.stringify({ type: 'iceCandidate', candidate: message.candidate }));
+      }
+    }
+  });
+});
 
-    socket.on("verifyAudio",(room)=>{
-        const initiatorEmail=socketidToEmailMap.get(socket.id)
-        let email=null
-        for (const [socketId, emailjoiner] of socketidToEmailMap.entries()) {
-            if(socketId!==socket.id){
-                email=emailjoiner
-            }
-        }
-        io.to(emailToSocketIdMap.get(initiatorEmail)).emit("verifyAudio",{email,initiatorEmail})
-    })
-})
-
-server.listen(5000, () => console.log('server is running on port 5000'));
+server.listen(PORT,()=>{console.log(`web socket server started at ${PORT}`)})

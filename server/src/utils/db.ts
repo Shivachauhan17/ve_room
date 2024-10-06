@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
-import {MONGODB_URI} from './config'
+import {DB_STRING} from './config'
 
 
 const connectDB=async():Promise<void>=>{
     try{
-        if(MONGODB_URI!==undefined){
-            await mongoose.connect(MONGODB_URI);
+        if(DB_STRING!==undefined){
+            await mongoose.connect(DB_STRING);
             console.log("mongo is connected");
         }
         else{
