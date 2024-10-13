@@ -18,29 +18,23 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = require("../utils/config");
 const crypto_1 = require("../utils/crypto");
 const fs_1 = __importDefault(require("fs"));
-const ensureDirectoryExistence = (dir) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!fs_1.default.existsSync(dir)) {
-        try {
-            yield fs_1.default.promises.mkdir(dir, { recursive: true });
-            console.log('Directory created successfully');
-        }
-        catch (err) {
-            console.error('Error creating directory:', err);
-        }
-    }
-});
-function writeBase64Data(base64string, email, imgNo) {
+const path_1 = __importDefault(require("path"));
+function writeBase64Data(image, email, count) {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const dir = 'src/images/' + email;
-            ensureDirectoryExistence(dir);
-            const filePath = dir + '/' + imgNo + '.jpg';
-            const buffer = Buffer.from(base64string, 'base64');
-            yield fs_1.default.promises.writeFile(filePath, buffer);
+        const matches = image.match(/^data:(image\/(png|jpeg|jpg));base64,(.+)$/);
+        if (!matches) {
+            throw Error("corrupted image");
         }
-        catch (e) {
-            console.log("Error in reading file: ", e);
-        }
+        const mimeType = matches[1];
+        const fileExtension = mimeType.split('/')[1];
+        const rootDir = path_1.default.resolve(__dirname, '../../');
+        const dirPath = path_1.default.join(rootDir, "images", email);
+        fs_1.default.mkdirSync(dirPath, { recursive: true });
+        const filePath = path_1.default.join(dirPath, `${count}.${fileExtension}`);
+        console.log("filePath:", filePath);
+        const cleanBase64 = matches[3];
+        fs_1.default.writeFileSync(filePath, cleanBase64, { encoding: 'base64' });
+        return;
     });
 }
 exports.writeBase64Data = writeBase64Data;
