@@ -19,6 +19,8 @@ const SignUpPage = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [images, setImages] = useState<string[]>([]);
     // const Navigate = useNavigate();
+    const [onUpload, setonUpload] = useState(false);
+    const [uploaded, setUploaded] = useState(false);
 
     
     
@@ -50,29 +52,12 @@ const SignUpPage = () => {
         };
     }, [page]);
 
-    const captureImage=()=>{
-        const canvas=canvasRef.current;
-        const video=videoRef.current;
-
-        if(canvas && video){
-            const ctx=canvas.getContext("2d")
-            if(ctx){
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;  
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                // Convert the canvas to a base64-encoded image
-                const imageUrl = canvas.toDataURL('image/jpeg');
-                setImages([...images, imageUrl]);
-            }
-        }
-    }
 
     const handleSubmit = async (event: React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
-        
+        try{
 
-        
+            setonUpload(true);
             api.post<{email:string, name:string}>('/register', {...credentials,image:images[0]}, { withCredentials: true })
                 .then((response)=>{
                     if (response.status === 200) {
@@ -86,6 +71,8 @@ const SignUpPage = () => {
                         }
                         localStorage.setItem('email', response.data.email);
                         localStorage.setItem('name', response.data.name);
+                        setonUpload(false);
+                        setUploaded(true);
                         Swal.fire({
                             icon: 'success',
                             title: 'Success!',
@@ -120,6 +107,10 @@ const SignUpPage = () => {
                         });
                     }
                 })
+            }
+            catch(e){
+                console.log(e)
+            }
     };
 
     const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,6 +139,53 @@ const SignUpPage = () => {
 
     const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setCredentials({ ...credentials, password: e.target.value });
+    };
+
+
+    useEffect(() => {
+        const getCameraStream = async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        getCameraStream();
+
+       
+        return () => {
+            if (videoRef.current && videoRef.current.srcObject) {
+                const stream = videoRef.current.srcObject as MediaStream;
+                const tracks = stream.getTracks();
+                tracks.forEach((track: MediaStreamTrack) => track.stop());
+            }
+        };
+
+    }, []);
+
+    const captureImage = () => {
+        const canvas = canvasRef.current;
+        const video = videoRef.current;
+
+        if (canvas && video) {
+            const ctx = canvas.getContext("2d");
+            if (ctx) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                const imageUrl = canvas.toDataURL('image/jpeg');
+                setImages((prevImages) => [...prevImages, imageUrl]);
+            }
+        }
+    };
+
+    const removeImage = (index:number) => {
+        setImages((prevImages) => prevImages.filter((_, i) => i !== index));
     };
 
     if (page === 1) {
@@ -223,44 +261,71 @@ const SignUpPage = () => {
         );
     } else if (page === 2) {
         return (
-            <div className="w-[100vw] flex flex-col justify-center items-center mt-4">
-                <div className="w-[80%] flex justify-start text-[15px] font-gray-500">
-                    <div>Click altleast 5 image of person for whom account being created</div>
-                </div>
-                <div className="w-[70vw] flex flex-col justify-between  items-start mt-4 sm:mt-40 gap-4">
-                    <div className="overflow-hidden rounded-xl">
-                        <video ref={videoRef} autoPlay />
-                    </div>
+            <div className="image-capture-container">
+            <h2 className="image-capture-title">Upload Store Photos</h2>
+            <p className="image-capture-instructions">Click 5 images of YourSelf.</p>
+            <div className="video-container">
+                <div className="relative">
+                    <video ref={videoRef} autoPlay className="video" />
                     <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
-                    <div className="flex justify-start items-center flex-wrap  ">
-                        <ul className="flex justify-start items-start flex-wrap">
-                            {images.map((img, index) => (
-                                <li key={index} className="m-2 ">
-                                    <img className="w-[45px] h-[45px] rounded-md hover:w-[100px] hover:h-[100px]" src={img} alt={`Captured ${index}`} />
-                                </li>
-                            ))}
-                        </ul>
-                        <div className="flex flex-col justify-start items-start cursor-pointer ">
-                            <div onClick={()=>{
-                                if(images.length<5){
-                                    captureImage();
-                                }
-                                }} className="flex justify-center items-center gap-1">
-                                <div className="h-[45px] w-[45px] text-3xl font-bold text-gray-400 border-[1px] border-gray-300 text-center rounded-md bg-gray-100">
-                                    +
-                                </div>
-                                <div className="text-[12px] font-bold text-gray-400">
-                                Click
-                            </div>
-                            </div>
-                            
-                        </div>
-                    </div>
                 </div>
-                {images.length===5?<div className="mt-4">
-                    <button onClick={handleSubmit} className="border-[1px] border-violet-800 text-violet-800 rounded-md p-2 py-1 hover:text-white hover:bg-violet-800">Submit</button>
-                </div>:null}
+                <div className="flex flex-col items-center p-4">
+                    <ul className="image-preview">
+                        {images.map((img, index) => (
+                            <li key={index} className="image-item relative">
+                                <img className="image" src={img} alt={`Captured ${index}`} />
+                                <button
+                                    onClick={() => removeImage(index)}
+                                    className="remove-button absolute top-2 right-2"
+                                    aria-label="Remove image"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="20"
+                                        height="20"
+                                        fill="red"
+                                        className="bi bi-x-circle"
+                                        viewBox="0 0 16 16"
+                                    >
+                                        <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.5 11.5a.5.5 0 0 1-.707 0L8 9.707 5.207 12.5a.5.5 0 1 1-.707-.707L7.293 9.5 4.5 6.707a.5.5 0 0 1 .707-.707L8 8.293l2.793-2.793a.5.5 0 0 1 .707.707L8.707 9.5l2.793 2.793a.5.5 0 0 1 0 .707z"/>
+                                    </svg>
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                    {images.length !== 5 && (
+                        <div className="flex flex-col items-center">
+                            <button
+                                onClick={() => {
+                                    if (images.length < 5) {
+                                        captureImage();
+                                    }
+                                }}
+                                className="capture-button"
+                            >
+                                <span className="text-2xl font-bold">+</span>
+                            </button>
+                            <span className="capture-button-label">Click to Capture</span>
+                        </div>
+                    )}
+                </div>
             </div>
+            <div className="mt-4">
+                {images.length === 5 && (
+                    <div className="mt-4">
+                        {onUpload ? (
+                            <div className="uploading-animation">Uploading...</div>
+                        ) : uploaded ? (
+                            <span>Uploaded</span>
+                        ) : (
+                            <button onClick={handleSubmit} className="submit-button">
+                                Submit
+                            </button>
+                        )}
+                    </div>
+                )}
+            </div>
+        </div>
         );
     }
 

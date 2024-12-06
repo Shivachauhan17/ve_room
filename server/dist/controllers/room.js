@@ -24,22 +24,25 @@ const controller = {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 let code = generateUniqueHexCode();
-                let isExist = yield room_1.default.find({ code: code });
-                if (isExist) {
-                    yield room_1.default.updateOne({ code: code }, { $set: { email: req.email } });
+                let existingRoom = yield room_1.default.findOne({ code: code });
+                if (existingRoom) {
+                    // Update the existing room's creatorEmail
+                    yield room_1.default.updateOne({ code: code }, { $set: { creatorEmail: req.email } });
+                    res.status(200).json({ data: code }); // Return existing room's code
                 }
                 else {
+                    // Create a new room
                     const newRoom = new room_1.default({
-                        email: req.email,
+                        creatorEmail: req.email,
                         code: code,
                     });
                     yield newRoom.save();
+                    res.status(200).json({ data: code }); // Return the new room's code
                 }
-                res.status(200).json({ data: code });
             }
             catch (e) {
                 console.log(e);
-                res.status(500).json({ err: "error in making a new room." });
+                res.status(500).json({ err: "Error in making a new room." });
             }
         });
     },
@@ -47,12 +50,13 @@ const controller = {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { code } = req.body;
+                console.log("code:", req.body);
                 if (!code) {
                     return res.status(400).json({ msg: null, err: "some of the field missing from the requests" });
                 }
                 const isOtp = yield room_1.default.findOne({ code: code, creatorEmail: req.email });
                 if (!isOtp) {
-                    return res.status(204).json({ msg: false });
+                    return res.status(200).json({ msg: false });
                 }
                 return res.status(200).json({ msg: true });
             }

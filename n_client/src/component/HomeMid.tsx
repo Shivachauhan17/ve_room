@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import '../Css/HomeMid.css'
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -41,13 +41,16 @@ const HomeMid=()=>{
 
     }
 
-    async function checkRoom(){
+    const checkRoom=useCallback(async()=>{
         try{
             const result=await api.post<{msg:boolean}>('/rooms/checkRoom',{code:joinRoomName},{withCredentials:true})
+            console.log(result)
             if(result.status==200){
                 if(result.data.msg===true){
-                    const encrypted=encrypt(joinRoomName)
-                    navigate(`/sender/${encrypted}`)
+                    navigate(`/sender/${joinRoomName}`)
+                }
+                else if(result.data.msg===false){
+                    navigate(`/receiver/${joinRoomName}`)
                 }
             }
         }
@@ -60,7 +63,7 @@ const HomeMid=()=>{
                 confirmButtonText: 'OK',
             });
         }
-    }
+    },[joinRoomName])
 
 
     return(<>
@@ -103,7 +106,7 @@ const HomeMid=()=>{
             <div className='font-semibold'>Video calls and meetings for everyone</div>
             <div>Connect, collaborate, and celebrate from <br/> anywhere with Ve_room</div>
             <div className='flex flex-col gap-1'>
-                <input className='border-[1px] border-violet-800 rounded-md p-1 outline-none' placeholder='Enter room code'/>
+                <input className='border-[1px] border-violet-800 rounded-md p-1 outline-none' placeholder='Enter room code' onChange={(e)=>{setJoinRoomName(e.target.value)}}/>
                 <div className='flex justify-start'>
                     <div className='flex gap-1 justify-start items-center bg-violet-800 text-white p-1 px-2 rounded-md cursor-pointer' onClick={()=>{checkRoom()}}>
                         <AiOutlineVideoCameraAdd />

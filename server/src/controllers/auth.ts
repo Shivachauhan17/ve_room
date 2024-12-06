@@ -5,35 +5,30 @@ import jwt from 'jsonwebtoken'
 import { JWT_SECRET } from "../utils/config"
 import { validPassword,genPassword } from "../utils/crypto"
 import fs from 'fs'
+import path from 'path'
 
 export interface JwtPayload {
     id: string;    
     email: string;
 }
 
-const ensureDirectoryExistence = async (dir:string) => {
-    if (!fs.existsSync(dir)) {
-      try {
-        await fs.promises.mkdir(dir, { recursive: true });
-        console.log('Directory created successfully');
-      } catch (err) {
-        console.error('Error creating directory:', err);
-      }
-    }
-  };
 
-export async function writeBase64Data(base64string:string,email:string,imgNo:string){
-    try{
-        const dir='src/images/'+email
-        ensureDirectoryExistence(dir);
-        const filePath=dir+'/'+imgNo+'.jpg'
-        const buffer = Buffer.from(base64string, 'base64');
-        await fs.promises.writeFile(filePath, buffer);
+
+export async function writeBase64Data(image:string,email:string,count:string){
+    const matches = image.match(/^data:(image\/(png|jpeg|jpg));base64,(.+)$/);
+    if (!matches) {
+        throw Error("corrupted image")
     }
-    catch(e){
-        console.log("Error in reading file: ",e)
-        
-    }
+    const mimeType = matches[1];
+    const fileExtension = mimeType.split('/')[1];
+    const rootDir = path.resolve(__dirname, '../../');
+    const dirPath = path.join(rootDir,"images", email);
+    fs.mkdirSync(dirPath, { recursive: true });
+    const filePath = path.join(dirPath, `${count}.${fileExtension}`); 
+    console.log("filePath:",filePath)
+    const cleanBase64 = matches[3]; 
+    fs.writeFileSync(filePath, cleanBase64, { encoding: 'base64' }); 
+    return
 }
 
 const controller={

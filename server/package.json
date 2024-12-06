@@ -1,11 +1,12 @@
 {
-  "name": "signaling_server",
+  "name": "http_server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=production node ./src/server.js",
-    "dev": "cross-env NODE_ENV=development nodemon ./src/server.js",
+    "start": "npx tsc && cross-env NODE_ENV=production node ./dist/index.js",
+    "build":"tsc",
+    "dev": "cross-env NODE_ENV=development npm run build && nodemon ./dist/index.js",
     "test": "cross-env NODE_ENV=test tsc && jest --verbose"
   },
   "jest": {
