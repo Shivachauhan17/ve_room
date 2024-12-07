@@ -32,11 +32,10 @@ wss.on('connection', function connection(ws) {
             receiverSocket === null || receiverSocket === void 0 ? void 0 : receiverSocket.send(JSON.stringify({ type: 'createOffer', sdp: message.sdp }));
         }
         else if (message.type === 'createAnswer') {
-            console.log("create Answer");
             if (ws !== receiverSocket) {
                 return;
             }
-            senderSocket === null || senderSocket === void 0 ? void 0 : senderSocket.send(JSON.stringify({ type: 'createAnswer', sdp: message.sdp }));
+            senderSocket === null || senderSocket === void 0 ? void 0 : senderSocket.send(JSON.stringify({ type: 'createAnswer', sdp: message.sdp, email: message.email }));
         }
         else if (message.type === 'iceCandidate') {
             if (ws === senderSocket) {

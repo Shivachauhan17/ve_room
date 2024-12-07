@@ -5,6 +5,8 @@ import axios from "axios";
 
 function Sender() {
   const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [remoteEmail,setRemoteEmail]=useState("")
+  console.log("remoteEmail:",remoteEmail)
   const [pc, setPC] = useState<RTCPeerConnection | null>(null);
   const [remoteVideoStream, setRemoteVideoStream] =
     useState<MediaStream | null>(null);
@@ -23,7 +25,7 @@ function Sender() {
   useEffect(()=>{
     async function VerifyImage(){
       try{
-        const result=await axios.post<{match:boolean}>("http://localhost:8080/compare_faces",{ email:localStorage.getItem("email"),image:snapshot?.split(",")[1]},{withCredentials:true});
+        const result=await axios.post<{match:boolean}>("http://localhost:8080/compare_faces",{ email:remoteEmail,image:snapshot?.split(",")[1]},{withCredentials:true});
         if(result.status===200){
           setResponseCame(true)
           setIsMatched(result.data.match)
@@ -37,7 +39,7 @@ function Sender() {
     if(isSnaphotClicked && snapshot!==undefined &&  snapshot.length>0){
       VerifyImage()
     } 
-  },[snapshot,isSnaphotClicked])
+  },[snapshot,isSnaphotClicked,remoteEmail])
 
   useEffect(()=>{
     if (videoRef.current) {
@@ -67,6 +69,7 @@ function Sender() {
       const message = JSON.parse(event.data);
       if (message.type === "createAnswer") {
         await pc?.setRemoteDescription(message.sdp);
+        setRemoteEmail(message.email)
       } else if (message.type === "iceCandidate") {
         pc?.addIceCandidate(message.candidate);
       }

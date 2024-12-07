@@ -28,7 +28,8 @@ function Receiver() {
                         pc.setLocalDescription(answer);
                         socket.send(JSON.stringify({
                             type: 'createAnswer',
-                            sdp: answer
+                            sdp: answer,
+                            email:localStorage.getItem('email')
                         }));
                     });
                 });
